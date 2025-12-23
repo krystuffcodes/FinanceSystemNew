@@ -1,0 +1,47 @@
+.page {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+.sidebar {
+    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+    transition: width 0.3s ease;
+    overflow: hidden;
+    position: relative;
+}
+
+@media (max-width: 640.98px) {
+    /* Mobile styles handled by NavMenu */
+}
+
+@media (min-width: 641px) {
+    .page {
+        flex-direction: row;
+    }
+
+    .sidebar {
+        width: 70px;
+        height: 100vh;
+        position: sticky;
+        top: 0;
+    }
+
+    .sidebar:hover {
+        width: 250px;
+    }
+
+    /* Main content adjustment */
+    main {
+        transition: margin-left 0.3s ease;
+        width: 100%;
+    }
+
+    .content {
+        padding: 0 !important;
+    }
+}

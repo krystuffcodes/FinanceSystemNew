@@ -1,0 +1,963 @@
+@page "/revenue-overdue"
+@using System.ComponentModel.DataAnnotations
+
+<PageTitle>Customer Revenue Summary - Fortress Finance</PageTitle>
+
+<div class="revenue-management-container">
+    <!-- Header -->
+    <div class="revenue-header">
+        <h1>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="1" x2="12" y2="23"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                <line x1="12" y1="18" x2="12" y2="22"/>
+            </svg>
+            Customer Revenue Summary
+        </h1>
+        <div class="user-info">
+            <div class="user-avatar">A</div>
+            <div class="user-details">
+                <span class="user-name">Admin User</span>
+                <span class="user-role">Administrator</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tab-navigation">
+        <button class="tab-btn @(activeTab == "revenue" ? "active" : "")" @onclick="@(() => SetActiveTab("revenue"))">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="1" x2="12" y2="23"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                <line x1="12" y1="18" x2="12" y2="22"/>
+            </svg>
+            Customer Revenue Summary
+        </button>
+        <button class="tab-btn @(activeTab == "overdue" ? "active" : "")" @onclick="@(() => SetActiveTab("overdue"))">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            Overdue Accounts
+        </button>
+    </div>
+
+    @if (activeTab == "revenue")
+    {
+        <!-- Revenue Tab Content -->
+        <div class="revenue-content">
+            <!-- Enhanced Search and Filters Section -->
+            <div class="revenue-controls">
+                <div class="search-section">
+                    <div class="search-container">
+                        <span class="search-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"/>
+                                <path d="21 21l-4.35-4.35"/>
+                            </svg>
+                        </span>
+                        <input type="text" placeholder="Search by customer name..." @bind="revenueSearchTerm" @oninput="HandleRevenueSearch" class="search-input" />
+                    </div>
+                </div>
+                
+                <div class="filter-section">
+                    <select @bind="revenueSelectedFilter" class="filter-select">
+                        <option value="All">All</option>
+                        <option value="Active Loans">Active Loans</option>
+                        <option value="Completed Loans">Completed Loans</option>
+                        <option value="High Revenue">High Revenue</option>
+                    </select>
+                </div>
+                
+                <div class="actions-section">
+                    <button class="btn btn-primary btn-medium" @onclick="ExportRevenueData">
+                        <span class="btn-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7,10 12,15 17,10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                        </span>
+                        Export PDF
+                    </button>
+                    <button class="btn btn-secondary btn-medium" @onclick="PrintReport">
+                        <span class="btn-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6,9 6,2 18,2 18,9"/>
+                                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                                <rect x="6" y="14" width="12" height="8"/>
+                            </svg>
+                        </span>
+                        Print
+                    </button>
+                    <button class="btn btn-outline btn-medium" @onclick="RefreshRevenueData">
+                        <span class="btn-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="23,4 23,10 17,10"/>
+                                <polyline points="1,20 1,14 7,14"/>
+                                <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+                            </svg>
+                        </span>
+                        Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="revenue-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="1" x2="12" y2="23"/>
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                            <line x1="12" y1="18" x2="12" y2="22"/>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">@GetTotalRevenueDisplay()</div>
+                        <div class="stat-label">Total Revenue</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">@GetDisplayRevenueData().Count</div>
+                        <div class="stat-label">Active Customers</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">@GetAverageRevenueDisplay()</div>
+                        <div class="stat-label">Avg Revenue</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">@GetInterestEarnedDisplay()</div>
+                        <div class="stat-label">Interest Earned</div>
+                    </div>
+                </div>
+            </div>
+
+            @if (isRevenueLoading)
+            {
+                <div class="loading-container">
+                    <div class="loading-spinner"></div>
+                    <span>Loading revenue data...</span>
+                </div>
+            }
+            else if (!GetDisplayRevenueData().Any())
+            {
+                <div class="empty-container">
+                    <div class="empty-icon">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="1" x2="12" y2="23"/>
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                            <line x1="12" y1="18" x2="12" y2="22"/>
+                        </svg>
+                    </div>
+                    <h4>No revenue data found</h4>
+                    <p>Revenue data will appear here once customers have loans and payments.</p>
+                </div>
+            }
+            else
+            {
+                <!-- Revenue Table -->
+                <div class="table-section">
+                    <div class="table-header">
+                        <h3>Revenue Summary (@GetDisplayRevenueData().Count)</h3>
+                        <div class="table-actions">
+                            <div class="view-toggle">
+                                <button class="toggle-btn @(revenueViewMode == "table" ? "active" : "")" @onclick="@(() => SetRevenueViewMode("table"))">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h4"/>
+                                    </svg>
+                                    Table
+                                </button>
+                                <button class="toggle-btn @(revenueViewMode == "cards" ? "active" : "")" @onclick="@(() => SetRevenueViewMode("cards"))">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="3" y="3" width="7" height="7"/>
+                                        <rect x="14" y="3" width="7" height="7"/>
+                                        <rect x="14" y="14" width="7" height="7"/>
+                                        <rect x="3" y="14" width="7" height="7"/>
+                                    </svg>
+                                    Cards
+                                </button>
+                            </div>
+                            <select value="@revenuePageSize" @onchange="UpdateRevenuePageSize" class="page-size-select">
+                                <option value="5">5 per page</option>
+                                <option value="10">10 per page</option>
+                                <option value="25">25 per page</option>
+                                <option value="50">50 per page</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    @if (revenueViewMode == "table")
+                    {
+                        <!-- Table View -->
+                        <div class="table-container">
+                            <table class="revenue-table">
+                                <thead>
+                                    <tr>
+                                        <th @onclick="@(() => SortRevenueBy("CustomerName"))">
+                                            Customer @GetRevenueSortIcon("CustomerName")
+                                        </th>
+                                        <th @onclick="@(() => SortRevenueBy("LoanAmount"))">
+                                            Loan Amount @GetRevenueSortIcon("LoanAmount")
+                                        </th>
+                                        <th @onclick="@(() => SortRevenueBy("InterestRate"))">
+                                            Interest Rate @GetRevenueSortIcon("InterestRate")
+                                        </th>
+                                        <th @onclick="@(() => SortRevenueBy("PaidAmount"))">
+                                            Paid Amount @GetRevenueSortIcon("PaidAmount")
+                                        </th>
+                                        <th @onclick="@(() => SortRevenueBy("InterestEarned"))">
+                                            Interest Earned @GetRevenueSortIcon("InterestEarned")
+                                        </th>
+                                        <th @onclick="@(() => SortRevenueBy("Status"))">
+                                            Status @GetRevenueSortIcon("Status")
+                                        </th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var revenue in GetPagedRevenueData())
+                                    {
+                                        <tr class="revenue-row @GetRevenueRowClass(revenue.Status)">
+                                            <td class="customer-name">
+                                                <div class="name-cell">
+                                                    <div class="customer-avatar-small">@GetInitials(revenue.CustomerName)</div>
+                                                    <div class="name-info">
+                                                        <strong>@revenue.CustomerName</strong>
+                                                        <small>ID: @revenue.CustomerId</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="loan-amount">
+                                                <strong>@revenue.LoanAmount.ToString("C0")</strong>
+                                            </td>
+                                            <td class="interest-rate">
+                                                @revenue.InterestRate.ToString("F2")%
+                                            </td>
+                                            <td class="paid-amount">
+                                                <strong>@revenue.PaidAmount.ToString("C0")</strong>
+                                                <small>@GetPaymentProgress(revenue)%</small>
+                                            </td>
+                                            <td class="interest-earned">
+                                                <strong class="interest-value">@revenue.InterestEarned.ToString("C2")</strong>
+                                            </td>
+                                            <td class="revenue-status">
+                                                <span class="status-badge @GetRevenueStatusClass(revenue.Status)">
+                                                    @revenue.Status
+                                                </span>
+                                            </td>
+                                            <td class="revenue-actions">
+                                                <div class="action-buttons">
+                                                    <button class="btn-icon" title="View Details" @onclick="() => ViewRevenueDetails(revenue)">
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                                            <circle cx="12" cy="12" r="3"/>
+                                                        </svg>
+                                                    </button>
+                                                    <button class="btn-icon" title="Payment History" @onclick="() => ViewPaymentHistory(revenue)">
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                                            <polyline points="14,2 14,8 20,8"/>
+                                                            <line x1="16" y1="13" x2="8" y2="13"/>
+                                                            <line x1="16" y1="17" x2="8" y2="17"/>
+                                                            <polyline points="10,9 9,9 8,9"/>
+                                                        </svg>
+                                                    </button>
+                                                    <button class="btn-icon" title="Send Statement" @onclick="() => SendStatement(revenue)">
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                                            <polyline points="22,6 12,13 2,6"/>
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+    else if (activeTab == "overdue")
+    {
+        <!-- Overdue Tab Content -->
+        <div class="overdue-content">
+            <!-- Enhanced Search and Filters Section -->
+            <div class="revenue-controls">
+                <div class="search-section">
+                    <div class="search-container">
+                        <span class="search-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"/>
+                                <path d="21 21l-4.35-4.35"/>
+                            </svg>
+                        </span>
+                        <input type="text" placeholder="Search overdue accounts..." @bind="overdueSearchTerm" @oninput="HandleOverdueSearch" class="search-input" />
+                    </div>
+                </div>
+                
+                <div class="filter-section">
+                    <select @bind="overdueSelectedFilter" class="filter-select">
+                        <option value="All">All Overdue</option>
+                        <option value="30 Days">30+ Days</option>
+                        <option value="60 Days">60+ Days</option>
+                        <option value="90 Days">90+ Days</option>
+                    </select>
+                </div>
+                
+                <div class="actions-section">
+                    <button class="btn btn-primary btn-medium" @onclick="ExportOverdueData">
+                        <span class="btn-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7,10 12,15 17,10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                        </span>
+                        Export PDF
+                    </button>
+                    <button class="btn btn-secondary btn-medium" @onclick="PrintOverdueReport">
+                        <span class="btn-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6,9 6,2 18,2 18,9"/>
+                                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                                <rect x="6" y="14" width="12" height="8"/>
+                            </svg>
+                        </span>
+                        Print
+                    </button>
+                    <button class="btn btn-outline btn-medium" @onclick="RefreshOverdueData">
+                        <span class="btn-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="23,4 23,10 17,10"/>
+                                <polyline points="1,20 1,14 7,14"/>
+                                <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+                            </svg>
+                        </span>
+                        Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Overdue Stats -->
+            <div class="revenue-stats">
+                <div class="stat-card overdue">
+                    <div class="stat-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                            <line x1="12" y1="9" x2="12" y2="13"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">@GetTotalOverdueDisplay()</div>
+                        <div class="stat-label">Total Overdue</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">@GetOverdueAccountsCount()</div>
+                        <div class="stat-label">Overdue Accounts</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12,6 12,12 16,14"/>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">@GetAverageOverdueDays()</div>
+                        <div class="stat-label">Avg Days Overdue</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                        </svg>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">@GetWorstOverdueDisplay()</div>
+                        <div class="stat-label">Highest Overdue</div>
+                    </div>
+                </div>
+            </div>
+
+            @if (!GetOverdueAccounts().Any())
+            {
+                <div class="empty-container">
+                    <div class="empty-icon">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20,6 9,17 4,12"/>
+                        </svg>
+                    </div>
+                    <h4>No overdue accounts found</h4>
+                    <p>All accounts are up to date with payments.</p>
+                </div>
+            }
+            else
+            {
+                <!-- Overdue Table -->
+                <div class="table-section">
+                    <div class="table-header">
+                        <h3>Overdue Accounts (@GetOverdueAccounts().Count)</h3>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="revenue-table">
+                            <thead>
+                                <tr>
+                                    <th>Customer</th>
+                                    <th>Outstanding Amount</th>
+                                    <th>Days Overdue</th>
+                                    <th>Last Payment</th>
+                                    <th>Next Due Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var overdue in GetOverdueAccounts())
+                                {
+                                    <tr class="revenue-row overdue-row">
+                                        <td class="customer-name">
+                                            <div class="name-cell">
+                                                <div class="customer-avatar-small">@GetInitials(overdue.CustomerName)</div>
+                                                <div class="name-info">
+                                                    <strong>@overdue.CustomerName</strong>
+                                                    <small>ID: @overdue.CustomerId</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="outstanding-amount">
+                                            <strong class="overdue-amount">@overdue.OutstandingAmount.ToString("C0")</strong>
+                                        </td>
+                                        <td class="days-overdue">
+                                            <span class="overdue-badge @GetOverdueSeverityClass(overdue.DaysOverdue)">
+                                                @overdue.DaysOverdue days
+                                            </span>
+                                        </td>
+                                        <td class="last-payment">
+                                            @overdue.LastPaymentDate.ToString("MMM dd, yyyy")
+                                        </td>
+                                        <td class="next-due">
+                                            @overdue.NextDueDate.ToString("MMM dd, yyyy")
+                                        </td>
+                                        <td class="revenue-actions">
+                                            <div class="action-buttons">
+                                                <button class="btn-icon" title="Send Reminder" @onclick="() => SendReminder(overdue)">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                                        <polyline points="22,6 12,13 2,6"/>
+                                                    </svg>
+                                                </button>
+                                                <button class="btn-icon" title="Contact Customer" @onclick="() => ContactCustomer(overdue)">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                                                    </svg>
+                                                </button>
+                                                <button class="btn-icon" title="View Details" @onclick="() => ViewOverdueDetails(overdue)">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                                        <circle cx="12" cy="12" r="3"/>
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    // Revenue Data Model
+    public class RevenueDataModel
+    {
+        public string CustomerId { get; set; } = "";
+        public string CustomerName { get; set; } = "";
+        public decimal LoanAmount { get; set; }
+        public decimal InterestRate { get; set; }
+        public decimal PaidAmount { get; set; }
+        public decimal InterestEarned { get; set; }
+        public string Status { get; set; } = "";
+        public DateTime LoanDate { get; set; } = DateTime.Now;
+        public DateTime LastPaymentDate { get; set; } = DateTime.Now;
+    }
+
+    // Overdue Account Model
+    public class OverdueAccountModel
+    {
+        public string CustomerId { get; set; } = "";
+        public string CustomerName { get; set; } = "";
+        public decimal OutstandingAmount { get; set; }
+        public int DaysOverdue { get; set; }
+        public DateTime LastPaymentDate { get; set; }
+        public DateTime NextDueDate { get; set; }
+    }
+
+    // State Management
+    private List<RevenueDataModel> allRevenueData = new();
+    private List<OverdueAccountModel> allOverdueAccounts = new();
+    
+    private string activeTab = "revenue";
+    private bool isRevenueLoading = false;
+    
+    // Revenue Tab State
+    private string revenueSearchTerm = "";
+    private string revenueSelectedFilter = "All";
+    private string revenueViewMode = "table";
+    private int revenueCurrentPage = 0;
+    private int revenuePageSize = 10;
+    private string revenueSortColumn = "CustomerName";
+    private bool revenueSortAscending = true;
+    
+    // Overdue Tab State
+    private string overdueSearchTerm = "";
+    private string overdueSelectedFilter = "All";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSampleData();
+    }
+
+    private async Task LoadSampleData()
+    {
+        isRevenueLoading = true;
+        
+        // Sample revenue data
+        allRevenueData = new List<RevenueDataModel>
+        {
+            new RevenueDataModel 
+            { 
+                CustomerId = "CUST-2024-001",
+                CustomerName = "John Smith", 
+                LoanAmount = 50000,
+                InterestRate = 8.5m,
+                PaidAmount = 15000,
+                InterestEarned = 2125,
+                Status = "Active",
+                LoanDate = new DateTime(2024, 1, 15),
+                LastPaymentDate = new DateTime(2024, 12, 15)
+            },
+            new RevenueDataModel 
+            { 
+                CustomerId = "CUST-2024-002",
+                CustomerName = "Jane Johnson", 
+                LoanAmount = 30000,
+                InterestRate = 7.2m,
+                PaidAmount = 30000,
+                InterestEarned = 4320,
+                Status = "Completed",
+                LoanDate = new DateTime(2024, 3, 10),
+                LastPaymentDate = new DateTime(2024, 11, 30)
+            },
+            new RevenueDataModel 
+            { 
+                CustomerId = "CUST-2024-003",
+                CustomerName = "Michael Brown", 
+                LoanAmount = 75000,
+                InterestRate = 9.1m,
+                PaidAmount = 25000,
+                InterestEarned = 3412.5m,
+                Status = "Active",
+                LoanDate = new DateTime(2024, 2, 20),
+                LastPaymentDate = new DateTime(2024, 12, 10)
+            },
+            new RevenueDataModel 
+            { 
+                CustomerId = "CUST-2024-004",
+                CustomerName = "Sarah Davis", 
+                LoanAmount = 40000,
+                InterestRate = 6.8m,
+                PaidAmount = 8000,
+                InterestEarned = 1088,
+                Status = "Active",
+                LoanDate = new DateTime(2024, 4, 5),
+                LastPaymentDate = new DateTime(2024, 10, 15)
+            },
+            new RevenueDataModel 
+            { 
+                CustomerId = "CUST-2024-005",
+                CustomerName = "David Wilson", 
+                LoanAmount = 85000,
+                InterestRate = 8.9m,
+                PaidAmount = 85000,
+                InterestEarned = 15130,
+                Status = "Completed",
+                LoanDate = new DateTime(2023, 8, 12),
+                LastPaymentDate = new DateTime(2024, 12, 1)
+            }
+        };
+
+        // Sample overdue accounts
+        allOverdueAccounts = new List<OverdueAccountModel>
+        {
+            new OverdueAccountModel
+            {
+                CustomerId = "CUST-2024-006",
+                CustomerName = "Lisa Garcia",
+                OutstandingAmount = 5200,
+                DaysOverdue = 15,
+                LastPaymentDate = new DateTime(2024, 11, 15),
+                NextDueDate = new DateTime(2024, 12, 15)
+            },
+            new OverdueAccountModel
+            {
+                CustomerId = "CUST-2024-007",
+                CustomerName = "Robert Martinez",
+                OutstandingAmount = 8500,
+                DaysOverdue = 45,
+                LastPaymentDate = new DateTime(2024, 10, 20),
+                NextDueDate = new DateTime(2024, 11, 20)
+            },
+            new OverdueAccountModel
+            {
+                CustomerId = "CUST-2024-008",
+                CustomerName = "Amanda Taylor",
+                OutstandingAmount = 3200,
+                DaysOverdue = 75,
+                LastPaymentDate = new DateTime(2024, 9, 30),
+                NextDueDate = new DateTime(2024, 10, 30)
+            }
+        };
+        
+        isRevenueLoading = false;
+    }
+
+    // Tab Management
+    private void SetActiveTab(string tab)
+    {
+        activeTab = tab;
+        StateHasChanged();
+    }
+
+    // Revenue Tab Methods
+    private async Task HandleRevenueSearch(ChangeEventArgs e)
+    {
+        revenueSearchTerm = e.Value?.ToString() ?? "";
+        revenueCurrentPage = 0;
+        await Task.CompletedTask;
+    }
+
+    private List<RevenueDataModel> GetDisplayRevenueData()
+    {
+        var data = allRevenueData.AsQueryable();
+        
+        // Apply search filter
+        if (!string.IsNullOrEmpty(revenueSearchTerm))
+        {
+            data = data.Where(r => 
+                r.CustomerName.Contains(revenueSearchTerm, StringComparison.OrdinalIgnoreCase) ||
+                r.CustomerId.Contains(revenueSearchTerm, StringComparison.OrdinalIgnoreCase));
+        }
+        
+        // Apply category filter
+        data = revenueSelectedFilter switch
+        {
+            "Active Loans" => data.Where(r => r.Status == "Active"),
+            "Completed Loans" => data.Where(r => r.Status == "Completed"),
+            "High Revenue" => data.Where(r => r.InterestEarned > 3000),
+            _ => data
+        };
+
+        // Apply sorting
+        data = revenueSortColumn switch
+        {
+            "CustomerName" => revenueSortAscending ? data.OrderBy(r => r.CustomerName) : data.OrderByDescending(r => r.CustomerName),
+            "LoanAmount" => revenueSortAscending ? data.OrderBy(r => r.LoanAmount) : data.OrderByDescending(r => r.LoanAmount),
+            "InterestRate" => revenueSortAscending ? data.OrderBy(r => r.InterestRate) : data.OrderByDescending(r => r.InterestRate),
+            "PaidAmount" => revenueSortAscending ? data.OrderBy(r => r.PaidAmount) : data.OrderByDescending(r => r.PaidAmount),
+            "InterestEarned" => revenueSortAscending ? data.OrderBy(r => r.InterestEarned) : data.OrderByDescending(r => r.InterestEarned),
+            "Status" => revenueSortAscending ? data.OrderBy(r => r.Status) : data.OrderByDescending(r => r.Status),
+            _ => data.OrderBy(r => r.CustomerName)
+        };
+        
+        return data.ToList();
+    }
+
+    private List<RevenueDataModel> GetPagedRevenueData()
+    {
+        var displayData = GetDisplayRevenueData();
+        return displayData.Skip(revenueCurrentPage * revenuePageSize).Take(revenuePageSize).ToList();
+    }
+
+    private void SortRevenueBy(string column)
+    {
+        if (revenueSortColumn == column)
+        {
+            revenueSortAscending = !revenueSortAscending;
+        }
+        else
+        {
+            revenueSortColumn = column;
+            revenueSortAscending = true;
+        }
+        StateHasChanged();
+    }
+
+    private string GetRevenueSortIcon(string column)
+    {
+        if (revenueSortColumn != column) return "";
+        return revenueSortAscending ? "?" : "?";
+    }
+
+    private void SetRevenueViewMode(string mode)
+    {
+        revenueViewMode = mode;
+        StateHasChanged();
+    }
+
+    private async Task UpdateRevenuePageSize(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int newSize))
+        {
+            revenuePageSize = newSize;
+            revenueCurrentPage = 0;
+            StateHasChanged();
+        }
+        await Task.CompletedTask;
+    }
+
+    // Overdue Tab Methods
+    private async Task HandleOverdueSearch(ChangeEventArgs e)
+    {
+        overdueSearchTerm = e.Value?.ToString() ?? "";
+        await Task.CompletedTask;
+    }
+
+    private List<OverdueAccountModel> GetOverdueAccounts()
+    {
+        var data = allOverdueAccounts.AsQueryable();
+        
+        // Apply search filter
+        if (!string.IsNullOrEmpty(overdueSearchTerm))
+        {
+            data = data.Where(o => 
+                o.CustomerName.Contains(overdueSearchTerm, StringComparison.OrdinalIgnoreCase) ||
+                o.CustomerId.Contains(overdueSearchTerm, StringComparison.OrdinalIgnoreCase));
+        }
+        
+        // Apply category filter
+        data = overdueSelectedFilter switch
+        {
+            "30 Days" => data.Where(o => o.DaysOverdue >= 30),
+            "60 Days" => data.Where(o => o.DaysOverdue >= 60),
+            "90 Days" => data.Where(o => o.DaysOverdue >= 90),
+            _ => data
+        };
+        
+        return data.OrderByDescending(o => o.DaysOverdue).ToList();
+    }
+
+    // Statistics Methods
+    private string GetTotalRevenueDisplay()
+    {
+        var total = GetDisplayRevenueData().Sum(r => r.InterestEarned);
+        return total.ToString("C0");
+    }
+
+    private string GetAverageRevenueDisplay()
+    {
+        var data = GetDisplayRevenueData();
+        if (!data.Any()) return "$0";
+        
+        var avg = data.Average(r => r.InterestEarned);
+        return avg.ToString("C0");
+    }
+
+    private string GetInterestEarnedDisplay()
+    {
+        var total = GetDisplayRevenueData().Sum(r => r.InterestEarned);
+        return total.ToString("C2");
+    }
+
+    private string GetTotalOverdueDisplay()
+    {
+        var total = GetOverdueAccounts().Sum(o => o.OutstandingAmount);
+        return total.ToString("C0");
+    }
+
+    private int GetOverdueAccountsCount()
+    {
+        return GetOverdueAccounts().Count;
+    }
+
+    private string GetAverageOverdueDays()
+    {
+        var accounts = GetOverdueAccounts();
+        if (!accounts.Any()) return "0";
+        
+        var avg = accounts.Average(o => o.DaysOverdue);
+        return avg.ToString("F0");
+    }
+
+    private string GetWorstOverdueDisplay()
+    {
+        var worst = GetOverdueAccounts().OrderByDescending(o => o.OutstandingAmount).FirstOrDefault();
+        return worst?.OutstandingAmount.ToString("C0") ?? "$0";
+    }
+
+    // Utility Methods
+    private string GetInitials(string name)
+    {
+        if (string.IsNullOrEmpty(name)) 
+            return "CU";
+        
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length >= 2)
+        {
+            return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+        }
+        else if (parts.Length == 1 && parts[0].Length >= 2)
+        {
+            return parts[0].Substring(0, 2).ToUpper();
+        }
+        
+        return "CU";
+    }
+
+    private string GetRevenueRowClass(string status)
+    {
+        return status.ToLower() switch
+        {
+            "active" => "revenue-active",
+            "completed" => "revenue-completed",
+            "overdue" => "revenue-overdue",
+            _ => ""
+        };
+    }
+
+    private string GetRevenueStatusClass(string status)
+    {
+        return status.ToLower() switch
+        {
+            "active" => "status-active",
+            "completed" => "status-completed",
+            "overdue" => "status-overdue",
+            _ => "status-default"
+        };
+    }
+
+    private string GetOverdueSeverityClass(int days)
+    {
+        return days switch
+        {
+            >= 90 => "overdue-severe",
+            >= 60 => "overdue-high",
+            >= 30 => "overdue-moderate",
+            _ => "overdue-low"
+        };
+    }
+
+    private string GetPaymentProgress(RevenueDataModel revenue)
+    {
+        if (revenue.LoanAmount == 0) return "0";
+        var progress = (revenue.PaidAmount / revenue.LoanAmount) * 100;
+        return progress.ToString("F0");
+    }
+
+    // Action Methods
+    private void ExportRevenueData()
+    {
+        Console.WriteLine("Exporting revenue data as PDF...");
+    }
+
+    private void PrintReport()
+    {
+        Console.WriteLine("Printing revenue report...");
+    }
+
+    private void RefreshRevenueData()
+    {
+        Console.WriteLine("Refreshing revenue data...");
+        StateHasChanged();
+    }
+
+    private void ExportOverdueData()
+    {
+        Console.WriteLine("Exporting overdue data as PDF...");
+    }
+
+    private void PrintOverdueReport()
+    {
+        Console.WriteLine("Printing overdue report...");
+    }
+
+    private void RefreshOverdueData()
+    {
+        Console.WriteLine("Refreshing overdue data...");
+        StateHasChanged();
+    }
+
+    private void ViewRevenueDetails(RevenueDataModel revenue)
+    {
+        Console.WriteLine($"Viewing revenue details for: {revenue.CustomerName}");
+    }
+
+    private void ViewPaymentHistory(RevenueDataModel revenue)
+    {
+        Console.WriteLine($"Viewing payment history for: {revenue.CustomerName}");
+    }
+
+    private void SendStatement(RevenueDataModel revenue)
+    {
+        Console.WriteLine($"Sending statement to: {revenue.CustomerName}");
+    }
+
+    private void SendReminder(OverdueAccountModel overdue)
+    {
+        Console.WriteLine($"Sending reminder to: {overdue.CustomerName}");
+    }
+
+    private void ContactCustomer(OverdueAccountModel overdue)
+    {
+        Console.WriteLine($"Contacting customer: {overdue.CustomerName}");
+    }
+
+    private void ViewOverdueDetails(OverdueAccountModel overdue)
+    {
+        Console.WriteLine($"Viewing overdue details for: {overdue.CustomerName}");
+    }
+}

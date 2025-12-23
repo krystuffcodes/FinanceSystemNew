@@ -1,0 +1,257 @@
+@page "/login"
+@page "/"
+@inject NavigationManager Navigation
+
+<PageTitle>Fortress Finance - Login</PageTitle>
+
+<div class="login-container">
+    <!-- Left Side - Welcome Section -->
+    <div class="welcome-section">
+        <div class="welcome-content">
+            <div class="welcome-header">
+                <h1>Welcome Back</h1>
+            </div>
+            
+            <div class="welcome-description">
+                <h2>Manage your finances with confidence</h2>
+                <p>Access your financial dashboard and take control of your money. Secure, reliable, and designed for your success.</p>
+            </div>
+            
+            <div class="features-list">
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                            <path d="M2 12h20"/>
+                        </svg>
+                    </div>
+                    <span>Real-time Analytics</span>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <circle cx="12" cy="16" r="1"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                    </div>
+                    <span>Secure Access</span>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12,6 12,12 16,14"/>
+                        </svg>
+                    </div>
+                    <span>24/7 Support</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right Side - Login Form -->
+    <div class="login-section">
+        <div class="login-card">
+            <!-- Logo and Title -->
+            <div class="login-header">
+                <div class="logo-container">
+                    <div class="logo-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 3v18h18"/>
+                            <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/>
+                        </svg>
+                    </div>
+                </div>
+                <h2>Fortress Finance</h2>
+            </div>
+            
+            <!-- Login Form -->
+            <form class="login-form" @onsubmit="HandleLogin" @onsubmit:preventDefault="true">
+                <div class="form-group">
+                    <input 
+                        type="text" 
+                        class="form-input @(emailError ? "error" : "")" 
+                        placeholder="Email address or username"
+                        @bind="loginModel.Email"
+                        @oninput="ClearEmailError"
+                        required />
+                    @if (emailError)
+                    {
+                        <div class="error-message">Email is required</div>
+                    }
+                </div>
+                
+                <div class="form-group">
+                    <div class="password-container">
+                        <input 
+                            type="@(showPassword ? "text" : "password")" 
+                            class="form-input @(passwordError ? "error" : "")" 
+                            placeholder="Password"
+                            @bind="loginModel.Password"
+                            @oninput="ClearPasswordError"
+                            required />
+                        <button type="button" class="password-toggle" @onclick="TogglePasswordVisibility">
+                            @if (showPassword)
+                            {
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                                    <line x1="1" y1="1" x2="23" y2="23"/>
+                                </svg>
+                            }
+                            else
+                            {
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                            }
+                        </button>
+                    </div>
+                    @if (passwordError)
+                    {
+                        <div class="error-message">Password is required</div>
+                    }
+                </div>
+                
+                @if (loginError)
+                {
+                    <div class="login-error">
+                        Invalid email or password. Please try again.
+                    </div>
+                }
+                
+                <button type="submit" class="sign-in-btn" disabled="@isLoading">
+                    @if (isLoading)
+                    {
+                        <div class="loading-spinner"></div>
+                        <span>Signing In...</span>
+                    }
+                    else
+                    {
+                        <span>SIGN IN</span>
+                    }
+                </button>
+            </form>
+            
+            <!-- Additional Links -->
+            <div class="login-footer">
+                <a href="#" class="forgot-password">Forgot your password?</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    public class LoginModel
+    {
+        public string Email { get; set; } = "";
+        public string Password { get; set; } = "";
+    }
+
+    private LoginModel loginModel = new();
+    private bool showPassword = false;
+    private bool isLoading = false;
+    private bool emailError = false;
+    private bool passwordError = false;
+    private bool loginError = false;
+
+    private void TogglePasswordVisibility()
+    {
+        showPassword = !showPassword;
+    }
+
+    private void ClearEmailError()
+    {
+        emailError = false;
+        loginError = false;
+    }
+
+    private void ClearPasswordError()
+    {
+        passwordError = false;
+        loginError = false;
+    }
+
+    private async Task HandleLogin()
+    {
+        // Reset errors
+        emailError = false;
+        passwordError = false;
+        loginError = false;
+
+        // Validate form
+        if (string.IsNullOrWhiteSpace(loginModel.Email))
+        {
+            emailError = true;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(loginModel.Password))
+        {
+            passwordError = true;
+            return;
+        }
+
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            // Simulate authentication delay
+            await Task.Delay(1500);
+
+            // Simple authentication check (you can replace with real authentication)
+            if (IsValidCredentials(loginModel.Email, loginModel.Password))
+            {
+                // Store authentication state (simplified)
+                await StoreAuthenticationState();
+                
+                // Navigate to dashboard/landing page
+                Navigation.NavigateTo("/dashboard", replace: true);
+            }
+            else
+            {
+                loginError = true;
+                isLoading = false;
+            }
+        }
+        catch (Exception)
+        {
+            loginError = true;
+            isLoading = false;
+        }
+    }
+
+    private bool IsValidCredentials(string email, string password)
+    {
+        // Simple authentication - replace with your actual authentication logic
+        var validCredentials = new Dictionary<string, string>
+        {
+            { "admin", "admin" },
+            { "admin@fortress.com", "admin123" },
+            { "user", "user123" },
+            { "demo", "demo" },
+            { "test", "test123" }
+        };
+
+        return validCredentials.ContainsKey(email.ToLower()) && 
+               validCredentials[email.ToLower()] == password;
+    }
+
+    private async Task StoreAuthenticationState()
+    {
+        // Simple authentication state storage
+        // In a real app, you'd use proper authentication services
+        await Task.CompletedTask;
+    }
+
+    protected override void OnInitialized()
+    {
+        // Check if already authenticated and redirect to dashboard
+        // This is where you'd check your authentication state
+    }
+}

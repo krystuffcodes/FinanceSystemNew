@@ -1,0 +1,151 @@
+@page "/dashboard"
+
+<PageTitle>Fortress Finance Dashboard</PageTitle>
+
+<div class="dashboard-header">
+    <h1>Fortress Finance Dashboard</h1>
+    <div class="user-info">
+        <div class="user-avatar">A</div>
+        <div class="user-details">
+            <div class="user-name">Admin User</div>
+            <div class="user-role">Administrator</div>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-container">
+    <!-- KPI Cards -->
+    <div class="kpi-section">
+        <div class="kpi-card total-revenue">
+            <div class="kpi-icon">&#128176;</div>
+            <div class="kpi-content">
+                <div class="kpi-label">TOTAL REVENUE</div>
+                <div class="kpi-value">--</div>
+                <div class="kpi-trend">&#128200; --</div>
+            </div>
+        </div>
+        
+        <div class="kpi-card active-loans">
+            <div class="kpi-icon">&#127974;</div>
+            <div class="kpi-content">
+                <div class="kpi-label">ACTIVE LOANS</div>
+                <div class="kpi-value">--</div>
+                <div class="kpi-trend">&#10024; -- new</div>
+            </div>
+        </div>
+        
+        <div class="kpi-card overdue-accounts">
+            <div class="kpi-icon">&#9888;</div>
+            <div class="kpi-content">
+                <div class="kpi-label">OVERDUE ACCOUNTS</div>
+                <div class="kpi-value">--</div>
+                <div class="kpi-trend">&#128681; -- flagged</div>
+            </div>
+        </div>
+        
+        <div class="kpi-card total-customers">
+            <div class="kpi-icon">&#128101;</div>
+            <div class="kpi-content">
+                <div class="kpi-label">TOTAL CUSTOMERS</div>
+                <div class="kpi-value">--</div>
+                <div class="kpi-trend">&#127381; -- new</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-section">
+        <div class="chart-container revenue-trend">
+            <div class="chart-header">
+                <h3><span class="chart-icon">&#128200;</span> Revenue Trend</h3>
+                <select class="time-selector">
+                    <option>This Month</option>
+                    <option>Last Month</option>
+                    <option>Last 3 Months</option>
+                </select>
+            </div>
+            <div class="chart-placeholder">
+                <div class="placeholder-content">
+                    <div class="placeholder-icon">&#128202;</div>
+                    <p>No data available for the selected period</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chart-container collection-rate">
+            <div class="chart-header">
+                <h3><span class="chart-icon">&#127919;</span> Collection Rate</h3>
+                <select class="time-selector">
+                    <option>This Month</option>
+                    <option>Last Month</option>
+                    <option>Last 3 Months</option>
+                </select>
+            </div>
+            <div class="circular-chart">
+                <div class="chart-circle">
+                    <div class="percentage">--%</div>
+                </div>
+                <div class="chart-label"><span class="small-icon">&#9200;</span> On-time Payments</div>
+            </div>
+            <div class="completion-stats">
+                <div class="stat">
+                    <span class="label"><span class="small-icon">&#9989;</span> COMPLETED</span>
+                    <span class="value">--</span>
+                </div>
+                <div class="stat">
+                    <span class="label"><span class="small-icon">&#128203;</span> TOTAL</span>
+                    <span class="value">--</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance and Key Metrics -->
+    <div class="bottom-section">
+        <div class="performance-trend">
+            <div class="chart-header">
+                <h3><span class="chart-icon">&#128201;</span> Performance Trend</h3>
+                <select class="time-selector">
+                    <option>This Month</option>
+                    <option>Last Month</option>
+                    <option>Last 3 Months</option>
+                </select>
+            </div>
+            <div class="chart-placeholder">
+                <div class="placeholder-content">
+                    <div class="placeholder-icon">&#128200;</div>
+                    <p>Performance data will appear here</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="key-metrics">
+            <div class="chart-header">
+                <h3><span class="chart-icon">&#128273;</span> Key Metrics</h3>
+                <div class="subtitle"><span class="small-icon">&#128202;</span> Summary statistics</div>
+            </div>
+            <div class="metrics-content">
+                <div class="metric-item">
+                    <span class="metric-label"><span class="small-icon">&#128181;</span> Average Loan Amount</span>
+                    <span class="metric-value">--</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label"><span class="small-icon">&#9889;</span> Collection Efficiency</span>
+                    <span class="metric-value">--%</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label"><span class="small-icon">&#127381;</span> New Customers (Month)</span>
+                    <span class="metric-value">--</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label"><span class="small-icon">&#10060;</span> Default Rate</span>
+                    <span class="metric-value">--%</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label"><span class="small-icon">&#9200;</span> Average Processing Time</span>
+                    <span class="metric-value">-- days</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

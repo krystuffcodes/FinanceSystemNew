@@ -1,0 +1,24 @@
+﻿@page "/counter"
+
+<PageTitle>Counter - Fortress Finance</PageTitle>
+
+<div class="page-header">
+    <h1>Counter</h1>
+</div>
+
+<div class="content-container">
+    <div class="counter-card">
+        <h3>Counter Demo</h3>
+        <p role="status">Current count: @currentCount</p>
+        <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+    </div>
+</div>
+
+@code {
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+}

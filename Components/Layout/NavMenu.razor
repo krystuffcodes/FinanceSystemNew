@@ -1,0 +1,71 @@
+﻿<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">
+            <div class="brand-container">
+                <div class="brand-icon">💎</div>
+                <span class="brand-text">Fortress Finance</span>
+            </div>
+        </a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="nav flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="dashboard">
+                <span class="bi bi-speedometer2-nav-menu" aria-hidden="true"></span>
+                <span class="nav-text">Dashboard</span>
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="payment">
+                <span class="bi bi-credit-card-nav-menu" aria-hidden="true"></span>
+                <span class="nav-text">Payment</span>
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="customer">
+                <span class="bi bi-people-nav-menu" aria-hidden="true"></span>
+                <span class="nav-text">Customer</span>
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="loan">
+                <span class="bi bi-bank-nav-menu" aria-hidden="true"></span>
+                <span class="nav-text">Loan</span>
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="revenue-overdue">
+                <span class="bi bi-check-circle-nav-menu" aria-hidden="true"></span>
+                <span class="nav-text">Revenue&Overdue</span>
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="reports">
+                <span class="bi bi-file-text-nav-menu" aria-hidden="true"></span>
+                <span class="nav-text">Reports</span>
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="graphs">
+                <span class="bi bi-bar-chart-nav-menu" aria-hidden="true"></span>
+                <span class="nav-text">Graphs</span>
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="archive">
+                <span class="bi bi-archive-nav-menu" aria-hidden="true"></span>
+                <span class="nav-text">Archive</span>
+            </NavLink>
+        </div>
+        <div class="nav-item px-3 logout-item">
+            <NavLink class="nav-link logout-link" href="logout">
+                <span class="bi bi-box-arrow-left-nav-menu" aria-hidden="true"></span>
+                <span class="nav-text">Logout</span>
+            </NavLink>
+        </div>
+    </nav>
+</div>

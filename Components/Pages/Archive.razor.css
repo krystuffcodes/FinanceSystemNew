@@ -1,0 +1,756 @@
+/* Archive Management Styles - Enhanced with Tabs */
+
+.archive-management-container {
+    background: #f8f9fa;
+    min-height: 100vh;
+    padding: 0;
+}
+
+/* Header */
+.archive-header {
+    background: white;
+    padding: 1rem 2rem;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.archive-header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.archive-header h1 svg {
+    stroke: #4285f4;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #4285f4;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.9rem;
+}
+
+.user-role {
+    color: #666;
+    font-size: 0.8rem;
+}
+
+/* Tab Navigation */
+.tab-navigation {
+    background: white;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 0 2rem;
+    display: flex;
+    gap: 0;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 1rem 1.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 3px solid transparent;
+    position: relative;
+}
+
+.tab-btn svg {
+    stroke: currentColor;
+}
+
+.tab-btn:hover {
+    color: #4285f4;
+    background: #f8f9fa;
+}
+
+.tab-btn.active {
+    color: #4285f4;
+    border-bottom-color: #4285f4;
+    background: #f8f9fa;
+}
+
+.tab-btn.active svg {
+    stroke: #4285f4;
+}
+
+/* Enhanced Controls Section */
+.archive-controls {
+    background: white;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.search-section {
+    display: flex;
+    align-items: center;
+}
+
+.search-container {
+    position: relative;
+    max-width: 500px;
+    flex: 1;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: border-color 0.2s ease;
+    background: white;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #4285f4;
+    box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+}
+
+.search-icon svg {
+    stroke: #666;
+}
+
+.filter-group {
+    display: flex;
+    gap: 1.5rem;
+    align-items: end;
+    flex-wrap: wrap;
+}
+
+.filter-section {
+    display: flex;
+    flex-direction: column;
+    min-width: 160px;
+}
+
+.filter-section label {
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 0.5rem;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filter-select {
+    padding: 0.75rem;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background: white;
+    cursor: pointer;
+    min-width: 160px;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #4285f4;
+    box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+}
+
+.actions-section {
+    display: flex;
+    gap: 0.75rem;
+    margin-left: auto;
+    align-items: center;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    text-decoration: none;
+}
+
+/* Medium sized buttons */
+.btn-medium {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.85rem;
+}
+
+.btn-primary {
+    background: #4285f4;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #3367d6;
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: #28a745;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #218838;
+}
+
+.btn-outline {
+    background: white;
+    color: #4285f4;
+    border: 1px solid #4285f4;
+}
+
+.btn-outline:hover {
+    background: #4285f4;
+    color: white;
+}
+
+.btn-icon {
+    display: flex;
+    align-items: center;
+}
+
+.btn-icon svg {
+    stroke: currentColor;
+}
+
+/* Archive Content */
+.archive-content {
+    padding: 0 2rem 2rem 2rem;
+}
+
+/* Table Section */
+.table-section {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid #f0f0f0;
+}
+
+.table-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.table-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.table-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.view-toggle {
+    display: flex;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.toggle-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    background: white;
+    color: #666;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.toggle-btn svg {
+    stroke: currentColor;
+}
+
+.toggle-btn:hover {
+    background: #f8f9fa;
+    color: #333;
+}
+
+.toggle-btn.active {
+    background: #4285f4;
+    color: white;
+}
+
+.toggle-btn.active svg {
+    stroke: white;
+}
+
+.page-size-select {
+    padding: 0.5rem;
+    border: 1px solid #d0d7de;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    background: white;
+}
+
+/* Archive Table Styles */
+.table-container {
+    overflow-x: auto;
+}
+
+.archive-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.archive-table th {
+    background: #f8f9fa;
+    padding: 1rem 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 2px solid #e0e0e0;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.archive-table th:hover {
+    background: #f0f0f0;
+}
+
+.archive-table th:first-child {
+    cursor: default;
+    width: 40px;
+}
+
+.archive-table td {
+    padding: 1rem 0.75rem;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+    font-size: 0.9rem;
+}
+
+.archive-row {
+    transition: background-color 0.2s ease;
+}
+
+.archive-row:hover {
+    background: #f8f9fa;
+}
+
+.archive-row.archive-completed {
+    border-left: 3px solid #28a745;
+}
+
+.archive-row.archive-defaulted {
+    border-left: 3px solid #dc3545;
+}
+
+.archive-row.archive-closed {
+    border-left: 3px solid #6c757d;
+}
+
+/* Table Cell Styles */
+.name-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.customer-avatar-small {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6c757d, #495057);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+.name-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.name-info strong {
+    color: #333;
+    margin-bottom: 0.125rem;
+}
+
+.name-info small {
+    color: #666;
+    font-size: 0.75rem;
+}
+
+/* Badge Styles */
+.employment-badge {
+    padding: 0.3rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.employment-badge.employed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.employment-badge.selfemployed {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.employment-badge.unemployed {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.employment-badge.retired {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.status-badge {
+    padding: 0.3rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-completed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-defaulted {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-closed {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+.status-default {
+    background: #f8f9fa;
+    color: #495057;
+}
+
+.total-paid strong {
+    color: #28a745;
+    font-weight: 600;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    padding: 0.4rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+
+.btn-icon svg {
+    stroke: currentColor;
+    flex-shrink: 0;
+}
+
+.btn-icon:hover {
+    background: #f0f0f0;
+    color: #333;
+    transform: scale(1.1);
+}
+
+.btn-icon.delete:hover {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.btn-icon:hover svg {
+    stroke: currentColor;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: #f8f9fa;
+    border-top: 1px solid #e0e0e0;
+}
+
+.pagination-info {
+    color: #666;
+    font-size: 0.85rem;
+}
+
+.pagination-controls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.page-btn {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d0d7de;
+    background: white;
+    color: #333;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.page-btn:hover:not(:disabled) {
+    background: #f8f9fa;
+    border-color: #4285f4;
+    color: #4285f4;
+}
+
+.page-btn.active {
+    background: #4285f4;
+    color: white;
+    border-color: #4285f4;
+}
+
+.page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.page-numbers {
+    display: flex;
+    gap: 0.25rem;
+}
+
+/* Loading and Empty States */
+.loading-container,
+.empty-container {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #666;
+}
+
+.loading-spinner {
+    width: 2rem;
+    height: 2rem;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #4285f4;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.empty-icon {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-icon svg {
+    stroke: #6c757d;
+}
+
+.empty-container h4 {
+    color: #333;
+    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+}
+
+.empty-container p {
+    color: #666;
+    max-width: 400px;
+    margin: 0 auto;
+    line-height: 1.5;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .archive-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    .tab-navigation {
+        padding: 0 1rem;
+        overflow-x: auto;
+    }
+
+    .tab-btn {
+        flex-shrink: 0;
+        padding: 0.75rem 1rem;
+        font-size: 0.85rem;
+    }
+
+    .archive-controls {
+        padding: 1rem;
+        gap: 1rem;
+    }
+
+    .filter-group {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    .actions-section {
+        margin-left: 0;
+        justify-content: center;
+    }
+
+    .archive-content {
+        padding: 0 1rem 2rem 1rem;
+    }
+
+    .table-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+
+    .table-actions {
+        justify-content: space-between;
+    }
+
+    .archive-table {
+        font-size: 0.8rem;
+    }
+
+    .archive-table th,
+    .archive-table td {
+        padding: 0.5rem;
+    }
+
+    .action-buttons {
+        flex-wrap: wrap;
+    }
+
+    .pagination {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .pagination-controls {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .archive-management-container {
+        padding: 0;
+    }
+
+    .archive-header {
+        padding: 1rem;
+    }
+
+    .tab-navigation {
+        padding: 0 0.5rem;
+    }
+
+    .tab-btn {
+        padding: 0.6rem 0.75rem;
+        font-size: 0.8rem;
+    }
+
+    .archive-controls {
+        padding: 1rem 0.5rem;
+    }
+
+    .filter-section {
+        min-width: 120px;
+    }
+
+    .archive-table {
+        font-size: 0.75rem;
+    }
+
+    .page-numbers .page-btn {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.8rem;
+    }
+}

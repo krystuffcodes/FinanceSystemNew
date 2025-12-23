@@ -1,0 +1,153 @@
+/* CSS-only icon system for maximum compatibility */
+
+/* Base icon styling */
+.icon {
+    display: inline-block;
+    width: 1.2em;
+    height: 1.2em;
+    vertical-align: middle;
+    position: relative;
+}
+
+/* Money/Dollar icon */
+.icon-money {
+    background: radial-gradient(circle, #4caf50 40%, transparent 40%);
+    border-radius: 50%;
+}
+.icon-money::before {
+    content: '$';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    font-size: 0.8em;
+}
+
+/* Bank icon */
+.icon-bank {
+    background: #2196f3;
+    -webkit-clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+.icon-bank::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background: #2196f3;
+}
+
+/* Warning icon */
+.icon-warning {
+    background: #ff9800;
+    -webkit-clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+.icon-warning::before {
+    content: '!';
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-weight: bold;
+    font-size: 0.7em;
+}
+
+/* Users icon */
+.icon-users {
+    background: #9c27b0;
+    border-radius: 50%;
+}
+.icon-users::before {
+    content: '??';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.8em;
+}
+
+/* Chart trending up */
+.icon-trend-up {
+    background: linear-gradient(45deg, transparent 40%, #4caf50 40%, #4caf50 60%, transparent 60%);
+}
+.icon-trend-up::after {
+    content: '';
+    position: absolute;
+    top: 20%;
+    right: 20%;
+    width: 0;
+    height: 0;
+    border-left: 3px solid transparent;
+    border-right: 3px solid transparent;
+    border-bottom: 5px solid #4caf50;
+    transform: rotate(45deg);
+}
+
+/* Simple fallback icons using pure CSS */
+.css-icon-money { 
+    color: #4caf50; 
+    font-weight: bold; 
+}
+.css-icon-money::before { content: '$'; }
+
+.css-icon-bank { 
+    color: #2196f3; 
+    font-weight: bold; 
+}
+.css-icon-bank::before { content: '?'; }
+
+.css-icon-warning { 
+    color: #ff9800; 
+    font-weight: bold; 
+}
+.css-icon-warning::before { content: '?'; }
+
+.css-icon-users { 
+    color: #9c27b0; 
+    font-weight: bold; 
+}
+.css-icon-users::before { content: '??'; }
+
+.css-icon-chart { 
+    color: #2196f3; 
+    font-weight: bold; 
+}
+.css-icon-chart::before { content: '??'; }
+
+.css-icon-trend { 
+    color: #4caf50; 
+    font-weight: bold; 
+}
+.css-icon-trend::before { content: '?'; }
+
+/* Apply to dashboard when emojis fail */
+.no-emoji .kpi-icon {
+    font-size: 1.5rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.no-emoji .total-revenue .kpi-icon { color: #4caf50; }
+.no-emoji .total-revenue .kpi-icon::before { content: '$'; }
+
+.no-emoji .active-loans .kpi-icon { color: #2196f3; }
+.no-emoji .active-loans .kpi-icon::before { content: '?'; }
+
+.no-emoji .overdue-accounts .kpi-icon { color: #ff9800; }
+.no-emoji .overdue-accounts .kpi-icon::before { content: '!'; }
+
+.no-emoji .total-customers .kpi-icon { color: #9c27b0; }
+.no-emoji .total-customers .kpi-icon::before { content: '?'; }
+
+/* Text-based icons for ultimate compatibility */
+.text-icon-money::before { content: 'MON'; font-size: 0.7em; }
+.text-icon-bank::before { content: 'BANK'; font-size: 0.6em; }
+.text-icon-warning::before { content: 'WARN'; font-size: 0.6em; }
+.text-icon-users::before { content: 'USER'; font-size: 0.6em; }

@@ -1,0 +1,23 @@
+﻿@page "/home"
+@inject NavigationManager Navigation
+
+<PageTitle>Home - Fortress Finance</PageTitle>
+
+<div class="page-header">
+    <h1>Home</h1>
+</div>
+
+<div class="content-container">
+    <div class="welcome-section">
+        <h2>Welcome to Fortress Finance</h2>
+        <p>Your comprehensive financial management solution.</p>
+    </div>
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        // Redirect to dashboard since user is already logged in
+        Navigation.NavigateTo("/dashboard", replace: true);
+    }
+}

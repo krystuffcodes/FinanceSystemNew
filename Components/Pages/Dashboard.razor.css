@@ -1,0 +1,432 @@
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: white;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 2rem;
+}
+
+.dashboard-header h1 {
+    color: #333;
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #4fc3f7;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.user-details {
+    text-align: right;
+}
+
+.user-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.user-role {
+    color: #666;
+    font-size: 0.8rem;
+}
+
+.dashboard-container {
+    padding: 0 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.kpi-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.kpi-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid #f0f0f0;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.kpi-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    flex-shrink: 0;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    font-family: 'Segoe UI Emoji', 'Segoe UI', sans-serif;
+}
+
+.total-revenue .kpi-icon {
+    background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
+    color: #4caf50;
+}
+
+.active-loans .kpi-icon {
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    color: #2196f3;
+}
+
+.overdue-accounts .kpi-icon {
+    background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+    color: #ff9800;
+}
+
+.total-customers .kpi-icon {
+    background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+    color: #9c27b0;
+}
+
+.kpi-content {
+    flex: 1;
+}
+
+.kpi-label {
+    color: #666;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+}
+
+.kpi-value {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 0.25rem;
+}
+
+.kpi-trend {
+    color: #666;
+    font-size: 0.85rem;
+}
+
+.charts-section {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.chart-container {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid #f0f0f0;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.chart-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.chart-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.time-selector {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 0.5rem;
+    background: white;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.time-selector:hover {
+    border-color: #4fc3f7;
+}
+
+.chart-placeholder {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border-radius: 4px;
+    color: #666;
+    border: 2px dashed #e0e0e0;
+}
+
+.placeholder-content {
+    text-align: center;
+}
+
+.placeholder-icon {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.6;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    font-family: 'Segoe UI Emoji', 'Segoe UI', sans-serif;
+}
+
+.circular-chart {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.chart-circle {
+    width: 120px;
+    height: 120px;
+    border: 8px solid #e0e0e0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: #f8f9fa;
+}
+
+.percentage {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #4fc3f7;
+}
+
+.chart-label {
+    color: #666;
+    font-size: 0.9rem;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+}
+
+.completion-stats {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.stat .label {
+    color: #666;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.stat .value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.bottom-section {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+}
+
+.performance-trend,
+.key-metrics {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 1px solid #f0f0f0;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.performance-trend:hover,
+.key-metrics:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.subtitle {
+    color: #666;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+.metrics-content {
+    margin-top: 1.5rem;
+}
+
+.metric-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+}
+
+.metric-item:last-child {
+    border-bottom: none;
+}
+
+.metric-item:hover {
+    background-color: #f8f9fa;
+    margin: 0 -1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+}
+
+.metric-label {
+    color: #666;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.metric-value {
+    font-weight: 600;
+    color: #333;
+}
+
+/* Loading animation for placeholders */
+.kpi-value, .metric-value, .percentage {
+    position: relative;
+}
+
+.kpi-value:contains("--"), .metric-value:contains("--"), .percentage:contains("--") {
+    color: #bbb;
+}
+
+@media (max-width: 768px) {
+    .dashboard-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    .charts-section,
+    .bottom-section {
+        grid-template-columns: 1fr;
+    }
+
+    .kpi-section {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-container {
+        padding: 0 1rem;
+    }
+    
+    .completion-stats {
+        gap: 1rem;
+    }
+}
+
+/* Enhanced emoji styling */
+.chart-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.chart-icon {
+    font-size: 1.2rem;
+    font-family: 'Segoe UI Emoji', 'Segoe UI', sans-serif;
+}
+
+.small-icon {
+    font-size: 0.9rem;
+    font-family: 'Segoe UI Emoji', 'Segoe UI', sans-serif;
+    margin-right: 0.3rem;
+}
+
+/* Ensure emoji font support */
+body, html {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Segoe UI Emoji';
+}
+
+/* Add subtle glow to icons */
+.kpi-icon,
+.placeholder-icon,
+.chart-icon,
+.small-icon {
+    text-shadow: 0 0 10px rgba(255,255,255,0.8);
+}
+
+/* Alternative CSS icons if HTML entities don't work */
+.icon-money::before { content: "$"; font-weight: bold; color: #4caf50; }
+.icon-bank::before { content: "??"; }
+.icon-warning::before { content: "?"; color: #ff9800; }
+.icon-users::before { content: "??"; }
+.icon-chart::before { content: "??"; }
+.icon-trend::before { content: "??"; }
+.icon-target::before { content: "??"; }
+
+/* Fallback for when emojis don't work */
+.no-emoji .kpi-icon {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.no-emoji .total-revenue .kpi-icon::before { content: "$"; }
+.no-emoji .active-loans .kpi-icon::before { content: "?"; }
+.no-emoji .overdue-accounts .kpi-icon::before { content: "!"; }
+.no-emoji .total-customers .kpi-icon::before { content: "?"; }

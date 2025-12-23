@@ -1,0 +1,597 @@
+@page "/reports"
+@using System.ComponentModel.DataAnnotations
+
+<PageTitle>Reports & Analytics - Fortress Finance</PageTitle>
+
+<div class="reports-management-container">
+    <!-- Header -->
+    <div class="reports-header">
+        <h1>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14,2 14,8 20,8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10,9 9,9 8,9"/>
+            </svg>
+            Reports & Analytics
+        </h1>
+        <div class="user-info">
+            <div class="user-avatar">A</div>
+            <div class="user-details">
+                <span class="user-name">Admin User</span>
+                <span class="user-role">Administrator</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Controls Section -->
+    <div class="reports-controls">
+        <div class="search-section">
+            <div class="correlation-type-section">
+                <label for="correlationType">Correlation Type</label>
+                <select id="correlationType" @bind="selectedCorrelationType" class="filter-select">
+                    <option value="All Correlations">All Correlations</option>
+                    <option value="Strong Positive">Strong Positive (0.7+)</option>
+                    <option value="Moderate Positive">Moderate Positive (0.4-0.7)</option>
+                    <option value="Weak/None">Weak/None (-0.4-0.4)</option>
+                    <option value="Moderate Negative">Moderate Negative (-0.7--0.4)</option>
+                    <option value="Strong Negative">Strong Negative (-1.0--0.7)</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="search-section">
+            <label for="searchMetric">Search Metric</label>
+            <div class="search-container">
+                <span class="search-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="21 21l-4.35-4.35"/>
+                    </svg>
+                </span>
+                <input type="text" id="searchMetric" placeholder="Search by metric name..." @bind="searchTerm" @oninput="HandleSearch" class="search-input" />
+                @if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    <button class="clear-search" @onclick="ClearFilters" title="Clear Filters">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                        Clear Filters
+                    </button>
+                }
+            </div>
+        </div>
+        
+        <div class="actions-section">
+            <button class="btn btn-primary btn-medium" @onclick="ExportPDF">
+                <span class="btn-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7,10 12,15 17,10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                </span>
+                Export PDF
+            </button>
+            <button class="btn btn-secondary btn-medium" @onclick="PrintReport">
+                <span class="btn-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6,9 6,2 18,2 18,9"/>
+                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                        <rect x="6" y="14" width="12" height="8"/>
+                    </svg>
+                </span>
+                Print
+            </button>
+            <button class="btn btn-outline btn-medium" @onclick="RefreshData">
+                <span class="btn-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23,4 23,10 17,10"/>
+                        <polyline points="1,20 1,14 7,14"/>
+                        <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+                    </svg>
+                </span>
+                Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- Key Metrics Summary -->
+    <div class="key-metrics-summary">
+        <div class="metric-highlight">
+            <strong>Loan Tenure ? Default Rate</strong>
+            <span class="metric-value positive">? 0.65</span>
+            <span class="metric-description">Moderate Positive - Variables tend to move together</span>
+            <span class="strength-indicator">Strong</span>
+        </div>
+    </div>
+
+    <!-- Correlation Matrix -->
+    <div class="correlation-matrix-section">
+        <div class="matrix-header">
+            <div class="matrix-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                </svg>
+                <h3>Correlation Matrix</h3>
+            </div>
+            <p class="matrix-description">Visual representation of correlations between all financial metrics</p>
+        </div>
+        
+        <div class="correlation-matrix">
+            <table class="matrix-table">
+                <thead>
+                    <tr>
+                        <th class="metric-header">Metrics</th>
+                        <th class="metric-header">Revenue</th>
+                        <th class="metric-header">Active Loans</th>
+                        <th class="metric-header">Overdue Accounts</th>
+                        <th class="metric-header">Customers</th>
+                        <th class="metric-header">Payment Rate</th>
+                        <th class="metric-header">Default Rate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var metric in GetMetrics())
+                    {
+                        <tr>
+                            <td class="metric-name">@metric</td>
+                            @foreach (var correlation in GetCorrelationRow(metric))
+                            {
+                                <td class="correlation-cell @GetCorrelationClass(correlation)">
+                                    <span class="correlation-value">@correlation.ToString("F2")</span>
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Legend -->
+        <div class="correlation-legend">
+            <div class="legend-item">
+                <div class="legend-color strong-positive"></div>
+                <span>0.7 - 1.0: Strong Positive</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color moderate-positive"></div>
+                <span>0.4 - 0.7: Moderate Positive</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color weak-none"></div>
+                <span>-0.4 - 0.4: Weak/None</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color moderate-negative"></div>
+                <span>-0.7 - -0.4: Moderate Negative</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color strong-negative"></div>
+                <span>-1.0 - -0.7: Strong Negative</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Summary -->
+    <div class="results-summary">
+        <p><strong>Showing @GetFilteredCorrelations().Count of @GetAllCorrelations().Count correlations</strong></p>
+    </div>
+
+    <!-- Correlations Table -->
+    <div class="correlations-table-section">
+        <div class="table-section">
+            <div class="table-header">
+                <h3>Correlation Analysis (@GetFilteredCorrelations().Count)</h3>
+                <div class="table-actions">
+                    <div class="view-toggle">
+                        <button class="toggle-btn @(viewMode == "table" ? "active" : "")" @onclick="@(() => SetViewMode("table"))">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h4"/>
+                            </svg>
+                            Table
+                        </button>
+                        <button class="toggle-btn @(viewMode == "cards" ? "active" : "")" @onclick="@(() => SetViewMode("cards"))">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="7" height="7"/>
+                                <rect x="14" y="3" width="7" height="7"/>
+                                <rect x="14" y="14" width="7" height="7"/>
+                                <rect x="3" y="14" width="7" height="7"/>
+                            </svg>
+                            Cards
+                        </button>
+                    </div>
+                    <select value="@pageSize" @onchange="UpdatePageSize" class="page-size-select">
+                        <option value="5">5 per page</option>
+                        <option value="10">10 per page</option>
+                        <option value="25">25 per page</option>
+                        <option value="50">50 per page</option>
+                    </select>
+                </div>
+            </div>
+
+            @if (viewMode == "table")
+            {
+                <!-- Table View -->
+                <div class="table-container">
+                    <table class="correlations-table">
+                        <thead>
+                            <tr>
+                                <th @onclick="@(() => SortBy("VariablePair"))">
+                                    Variable Pair @GetSortIcon("VariablePair")
+                                </th>
+                                <th @onclick="@(() => SortBy("CorrelationValue"))">
+                                    Correlation Value @GetSortIcon("CorrelationValue")
+                                </th>
+                                <th @onclick="@(() => SortBy("Interpretation"))">
+                                    Interpretation @GetSortIcon("Interpretation")
+                                </th>
+                                <th @onclick="@(() => SortBy("Strength"))">
+                                    Strength @GetSortIcon("Strength")
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var correlation in GetPagedCorrelations())
+                            {
+                                <tr class="correlation-row">
+                                    <td class="variable-pair">
+                                        <strong>@correlation.VariablePair</strong>
+                                    </td>
+                                    <td class="correlation-value">
+                                        <span class="correlation-badge @GetCorrelationClass(correlation.Value)">
+                                            ? @correlation.Value.ToString("F2")
+                                        </span>
+                                    </td>
+                                    <td class="interpretation">
+                                        @correlation.Interpretation
+                                    </td>
+                                    <td class="strength">
+                                        <span class="strength-badge @GetStrengthClass(correlation.Strength)">
+                                            @correlation.Strength
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    // Correlation Model
+    public class CorrelationModel
+    {
+        public string VariablePair { get; set; } = "";
+        public double Value { get; set; }
+        public string Interpretation { get; set; } = "";
+        public string Strength { get; set; } = "";
+    }
+
+    // State Management
+    private List<CorrelationModel> allCorrelations = new();
+    private Dictionary<string, Dictionary<string, double>> correlationMatrix = new();
+    
+    private bool isLoading = false;
+    private string searchTerm = "";
+    private string selectedCorrelationType = "All Correlations";
+    private string viewMode = "table";
+    private int currentPage = 0;
+    private int pageSize = 10;
+    private int totalPages => (int)Math.Ceiling((double)GetFilteredCorrelations().Count / pageSize);
+    private string sortColumn = "VariablePair";
+    private bool sortAscending = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCorrelationData();
+    }
+
+    private async Task LoadCorrelationData()
+    {
+        isLoading = true;
+        
+        // Sample correlation data matching your screenshots
+        allCorrelations = new List<CorrelationModel>
+        {
+            new CorrelationModel 
+            { 
+                VariablePair = "Revenue ? Active Loans",
+                Value = 0.92,
+                Interpretation = "Strong Positive - Variables move together",
+                Strength = "Very Strong"
+            },
+            new CorrelationModel 
+            { 
+                VariablePair = "Payment Rate ? Revenue",
+                Value = 0.88,
+                Interpretation = "Strong Positive - Variables move together",
+                Strength = "Very Strong"
+            },
+            new CorrelationModel 
+            { 
+                VariablePair = "Overdue Accounts ? Default Rate",
+                Value = 0.85,
+                Interpretation = "Strong Positive - Variables move together",
+                Strength = "Very Strong"
+            },
+            new CorrelationModel 
+            { 
+                VariablePair = "Payment Percentage ? Customer Health",
+                Value = 0.84,
+                Interpretation = "Strong Positive - Variables move together",
+                Strength = "Very Strong"
+            },
+            new CorrelationModel 
+            { 
+                VariablePair = "Customers ? Revenue",
+                Value = 0.81,
+                Interpretation = "Strong Positive - Variables move together",
+                Strength = "Strong"
+            },
+            new CorrelationModel 
+            { 
+                VariablePair = "Active Loans ? Customers",
+                Value = 0.78,
+                Interpretation = "Strong Positive - Variables move together",
+                Strength = "Strong"
+            },
+            new CorrelationModel 
+            { 
+                VariablePair = "Payment Rate ? Customers",
+                Value = 0.76,
+                Interpretation = "Strong Positive - Variables move together",
+                Strength = "Strong"
+            },
+            new CorrelationModel 
+            { 
+                VariablePair = "Loan Tenure ? Default Rate",
+                Value = 0.65,
+                Interpretation = "Moderate Positive - Variables tend to move together",
+                Strength = "Strong"
+            },
+            new CorrelationModel 
+            { 
+                VariablePair = "Revenue ? Overdue Accounts",
+                Value = -0.45,
+                Interpretation = "Moderate Negative - Variables move in opposite directions",
+                Strength = "Moderate"
+            },
+            new CorrelationModel 
+            { 
+                VariablePair = "Payment Rate ? Default Rate",
+                Value = -0.81,
+                Interpretation = "Strong Negative - Variables move in opposite directions",
+                Strength = "Very Strong"
+            }
+        };
+
+        // Build correlation matrix
+        var metrics = new[] { "Revenue", "Active Loans", "Overdue Accounts", "Customers", "Payment Rate", "Default Rate" };
+        correlationMatrix = new Dictionary<string, Dictionary<string, double>>();
+
+        foreach (var metric1 in metrics)
+        {
+            correlationMatrix[metric1] = new Dictionary<string, double>();
+            foreach (var metric2 in metrics)
+            {
+                if (metric1 == metric2)
+                {
+                    correlationMatrix[metric1][metric2] = 1.00;
+                }
+                else
+                {
+                    // Find correlation from data or create symmetric
+                    var correlation = FindCorrelation(metric1, metric2);
+                    correlationMatrix[metric1][metric2] = correlation;
+                }
+            }
+        }
+        
+        isLoading = false;
+    }
+
+    private double FindCorrelation(string metric1, string metric2)
+    {
+        // Predefined matrix values matching your screenshot
+        var matrixValues = new Dictionary<(string, string), double>
+        {
+            [("Revenue", "Active Loans")] = 0.92,
+            [("Revenue", "Overdue Accounts")] = -0.45,
+            [("Revenue", "Customers")] = 0.81,
+            [("Revenue", "Payment Rate")] = 0.88,
+            [("Revenue", "Default Rate")] = -0.52,
+            
+            [("Active Loans", "Overdue Accounts")] = -0.38,
+            [("Active Loans", "Customers")] = 0.78,
+            [("Active Loans", "Payment Rate")] = 0.84,
+            [("Active Loans", "Default Rate")] = -0.41,
+            
+            [("Overdue Accounts", "Customers")] = -0.52,
+            [("Overdue Accounts", "Payment Rate")] = -0.71,
+            [("Overdue Accounts", "Default Rate")] = 0.85,
+            
+            [("Customers", "Payment Rate")] = 0.76,
+            [("Customers", "Default Rate")] = -0.48,
+            
+            [("Payment Rate", "Default Rate")] = -0.81
+        };
+
+        // Try direct lookup
+        if (matrixValues.ContainsKey((metric1, metric2)))
+            return matrixValues[(metric1, metric2)];
+        
+        // Try reverse lookup (correlation is symmetric)
+        if (matrixValues.ContainsKey((metric2, metric1)))
+            return matrixValues[(metric2, metric1)];
+        
+        return 0.0; // Default
+    }
+
+    // Search and Filter Methods
+    private async Task HandleSearch(ChangeEventArgs e)
+    {
+        searchTerm = e.Value?.ToString() ?? "";
+        currentPage = 0;
+        await Task.CompletedTask;
+    }
+
+    private void ClearFilters()
+    {
+        searchTerm = "";
+        selectedCorrelationType = "All Correlations";
+        currentPage = 0;
+        StateHasChanged();
+    }
+
+    private List<CorrelationModel> GetFilteredCorrelations()
+    {
+        var correlations = allCorrelations.AsQueryable();
+        
+        // Apply search filter
+        if (!string.IsNullOrEmpty(searchTerm))
+        {
+            correlations = correlations.Where(c => 
+                c.VariablePair.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+        }
+        
+        // Apply correlation type filter
+        correlations = selectedCorrelationType switch
+        {
+            "Strong Positive" => correlations.Where(c => c.Value >= 0.7),
+            "Moderate Positive" => correlations.Where(c => c.Value >= 0.4 && c.Value < 0.7),
+            "Weak/None" => correlations.Where(c => c.Value >= -0.4 && c.Value <= 0.4),
+            "Moderate Negative" => correlations.Where(c => c.Value <= -0.4 && c.Value > -0.7),
+            "Strong Negative" => correlations.Where(c => c.Value <= -0.7),
+            _ => correlations
+        };
+
+        // Apply sorting
+        correlations = sortColumn switch
+        {
+            "VariablePair" => sortAscending ? correlations.OrderBy(c => c.VariablePair) : correlations.OrderByDescending(c => c.VariablePair),
+            "CorrelationValue" => sortAscending ? correlations.OrderBy(c => c.Value) : correlations.OrderByDescending(c => c.Value),
+            "Interpretation" => sortAscending ? correlations.OrderBy(c => c.Interpretation) : correlations.OrderByDescending(c => c.Interpretation),
+            "Strength" => sortAscending ? correlations.OrderBy(c => c.Strength) : correlations.OrderByDescending(c => c.Strength),
+            _ => correlations.OrderBy(c => c.VariablePair)
+        };
+        
+        return correlations.ToList();
+    }
+
+    private List<CorrelationModel> GetAllCorrelations()
+    {
+        return allCorrelations;
+    }
+
+    private List<CorrelationModel> GetPagedCorrelations()
+    {
+        var filteredCorrelations = GetFilteredCorrelations();
+        return filteredCorrelations.Skip(currentPage * pageSize).Take(pageSize).ToList();
+    }
+
+    // Matrix Methods
+    private string[] GetMetrics()
+    {
+        return new[] { "Revenue", "Active Loans", "Overdue Accounts", "Customers", "Payment Rate", "Default Rate" };
+    }
+
+    private double[] GetCorrelationRow(string metric)
+    {
+        var metrics = GetMetrics();
+        var row = new double[metrics.Length];
+        
+        for (int i = 0; i < metrics.Length; i++)
+        {
+            if (correlationMatrix.ContainsKey(metric) && correlationMatrix[metric].ContainsKey(metrics[i]))
+            {
+                row[i] = correlationMatrix[metric][metrics[i]];
+            }
+            else
+            {
+                row[i] = 0.0;
+            }
+        }
+        
+        return row;
+    }
+
+    // Utility Methods
+    private string GetCorrelationClass(double correlation)
+    {
+        return correlation switch
+        {
+            >= 0.7 => "strong-positive",
+            >= 0.4 => "moderate-positive", 
+            >= -0.4 => "weak-none",
+            >= -0.7 => "moderate-negative",
+            _ => "strong-negative"
+        };
+    }
+
+    private string GetStrengthClass(string strength)
+    {
+        return strength.ToLower().Replace(" ", "-");
+    }
+
+    // Sorting Methods
+    private void SortBy(string column)
+    {
+        if (sortColumn == column)
+        {
+            sortAscending = !sortAscending;
+        }
+        else
+        {
+            sortColumn = column;
+            sortAscending = true;
+        }
+        StateHasChanged();
+    }
+
+    private string GetSortIcon(string column)
+    {
+        if (sortColumn != column) return "";
+        return sortAscending ? "?" : "?";
+    }
+
+    // View Mode Methods
+    private void SetViewMode(string mode)
+    {
+        viewMode = mode;
+        StateHasChanged();
+    }
+
+    private async Task UpdatePageSize(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int newSize))
+        {
+            pageSize = newSize;
+            currentPage = 0;
+            StateHasChanged();
+        }
+        await Task.CompletedTask;
+    }
+
+    // Action Methods
+    private void ExportPDF()
+    {
+        Console.WriteLine("Exporting correlation analysis as PDF...");
+    }
+
+    private void PrintReport()
+    {
+        Console.WriteLine("Printing correlation report...");
+    }
+
+    private void RefreshData()
+    {
+        Console.WriteLine("Refreshing correlation data...");
+        StateHasChanged();
+    }
+}

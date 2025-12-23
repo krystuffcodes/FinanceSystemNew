@@ -1,0 +1,812 @@
+@page "/loan"
+@using System.ComponentModel.DataAnnotations
+
+<PageTitle>Loan Applications - Fortress Finance</PageTitle>
+
+<div class="loan-management-container">
+    <!-- Header -->
+    <div class="loan-header">
+        <h1>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="1" x2="12" y2="3"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                <line x1="12" y1="21" x2="12" y2="23"/>
+            </svg>
+            Loan Applications
+        </h1>
+        <div class="user-info">
+            <div class="user-avatar">A</div>
+            <div class="user-details">
+                <span class="user-name">Admin User</span>
+                <span class="user-role">Administrator</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Search and Filters Section -->
+    <div class="loan-controls">
+        <div class="search-section">
+            <div class="search-container">
+                <span class="search-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="21 21l-4.35-4.35"/>
+                    </svg>
+                </span>
+                <input type="text" placeholder="Search by applicant name, ID, or purpose..." @bind="searchTerm" @oninput="HandleSearch" class="search-input" />
+            </div>
+        </div>
+        
+        <div class="filter-section">
+            <select @bind="selectedFilter" class="filter-select">
+                <option value="All">All</option>
+                <option value="Pending">Pending</option>
+                <option value="Approved">Approved</option>
+                <option value="Rejected">Rejected</option>
+                <option value="Under Review">Under Review</option>
+            </select>
+        </div>
+        
+        <div class="actions-section">
+            <button class="btn btn-primary btn-medium" @onclick="ShowNewApplicationModal">
+                <span class="btn-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                </span>
+                New Application
+            </button>
+            <button class="btn btn-secondary btn-medium" @onclick="ExportApplications">
+                <span class="btn-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7,10 12,15 17,10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                </span>
+                Export
+            </button>
+            <button class="btn btn-outline btn-medium" @onclick="RefreshData">
+                <span class="btn-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23,4 23,10 17,10"/>
+                        <polyline points="1,20 1,14 7,14"/>
+                        <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+                    </svg>
+                </span>
+                Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="loan-stats">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14,2 14,8 20,8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10,9 9,9 8,9"/>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">@GetDisplayApplications().Count</div>
+                <div class="stat-label">Total Applications</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20,6 9,17 4,12"/>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">@GetApprovedCount()</div>
+                <div class="stat-label">Approved</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12,6 12,12 16,14"/>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">@GetPendingCount()</div>
+                <div class="stat-label">Pending</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="1" x2="12" y2="3"/>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                    <line x1="12" y1="21" x2="12" y2="23"/>
+                    <circle cx="18" cy="6" r="3"/>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">@GetTotalAmountDisplay()</div>
+                <div class="stat-label">Total Amount</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loan Content -->
+    <div class="loan-content">
+        @if (isLoading)
+        {
+            <div class="loading-container">
+                <div class="loading-spinner"></div>
+                <span>Loading applications...</span>
+            </div>
+        }
+        else if (!GetDisplayApplications().Any())
+        {
+            <div class="empty-container">
+                <div class="empty-icon">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14,2 14,8 20,8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10,9 9,9 8,9"/>
+                    </svg>
+                </div>
+                <h4>No loan applications found</h4>
+                <p>@(string.IsNullOrEmpty(searchTerm) ? "No loan applications in the database." : $"No applications match your search for '{searchTerm}'.")</p>
+                <button class="btn btn-primary btn-medium" @onclick="ShowNewApplicationModal">
+                    <span class="btn-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                    </span>
+                    Create First Application
+                </button>
+            </div>
+        }
+        else
+        {
+            <!-- Applications Table -->
+            <div class="table-section">
+                <div class="table-header">
+                    <h3>Loan Applications (@GetDisplayApplications().Count)</h3>
+                    <div class="table-actions">
+                        <div class="view-toggle">
+                            <button class="toggle-btn @(viewMode == "table" ? "active" : "")" @onclick="@(() => SetViewMode("table"))">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h4"/>
+                                </svg>
+                                Table
+                            </button>
+                            <button class="toggle-btn @(viewMode == "cards" ? "active" : "")" @onclick="@(() => SetViewMode("cards"))">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="7" height="7"/>
+                                    <rect x="14" y="3" width="7" height="7"/>
+                                    <rect x="14" y="14" width="7" height="7"/>
+                                    <rect x="3" y="14" width="7" height="7"/>
+                                </svg>
+                                Cards
+                            </button>
+                        </div>
+                        <select value="@pageSize" @onchange="UpdatePageSize" class="page-size-select">
+                            <option value="5">5 per page</option>
+                            <option value="10">10 per page</option>
+                            <option value="25">25 per page</option>
+                            <option value="50">50 per page</option>
+                        </select>
+                    </div>
+                </div>
+
+                @if (viewMode == "table")
+                {
+                    <!-- Table View -->
+                    <div class="table-container">
+                        <table class="applications-table">
+                            <thead>
+                                <tr>
+                                    <th @onclick="@(() => SortBy("ApplicationId"))">
+                                        ID @GetSortIcon("ApplicationId")
+                                    </th>
+                                    <th @onclick="@(() => SortBy("ApplicantName"))">
+                                        Applicant @GetSortIcon("ApplicantName")
+                                    </th>
+                                    <th @onclick="@(() => SortBy("Amount"))">
+                                        Amount @GetSortIcon("Amount")
+                                    </th>
+                                    <th @onclick="@(() => SortBy("Purpose"))">
+                                        Purpose @GetSortIcon("Purpose")
+                                    </th>
+                                    <th @onclick="@(() => SortBy("ApplicationDate"))">
+                                        Date @GetSortIcon("ApplicationDate")
+                                    </th>
+                                    <th @onclick="@(() => SortBy("Status"))">
+                                        Status @GetSortIcon("Status")
+                                    </th>
+                                    <th @onclick="@(() => SortBy("EmploymentType"))">
+                                        Employment @GetSortIcon("EmploymentType")
+                                    </th>
+                                    <th @onclick="@(() => SortBy("Income"))">
+                                        Income @GetSortIcon("Income")
+                                    </th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var application in GetPagedApplications())
+                                {
+                                    <tr class="application-row @GetApplicationClass(application.Status)">
+                                        <td class="application-id">
+                                            <strong>@application.ApplicationId</strong>
+                                        </td>
+                                        <td class="applicant-name">
+                                            <div class="name-cell">
+                                                <div class="applicant-avatar-small">@GetInitials(application.ApplicantName)</div>
+                                                <div class="name-info">
+                                                    <strong>@application.ApplicantName</strong>
+                                                    <small>ID: @application.CustomerId</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="application-amount">
+                                            <strong>@application.Amount.ToString("C0")</strong>
+                                            <small>@application.InterestRate%</small>
+                                        </td>
+                                        <td class="application-purpose">
+                                            @application.Purpose
+                                        </td>
+                                        <td class="application-date">
+                                            @application.ApplicationDate.ToString("MMM dd, yyyy")
+                                        </td>
+                                        <td class="application-status">
+                                            <span class="status-badge @GetStatusClass(application.Status)">
+                                                @application.Status
+                                            </span>
+                                        </td>
+                                        <td class="application-employment">
+                                            @application.EmploymentType
+                                        </td>
+                                        <td class="application-income">
+                                            <strong>@application.Income.ToString("C0")</strong>
+                                        </td>
+                                        <td class="application-actions">
+                                            <div class="action-buttons">
+                                                <button class="btn-icon" title="View Details" @onclick="() => ViewApplicationDetails(application)">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                                        <circle cx="12" cy="12" r="3"/>
+                                                    </svg>
+                                                </button>
+                                                <button class="btn-icon" title="Edit Application" @onclick="() => EditApplication(application)">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                                        <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                                    </svg>
+                                                </button>
+                                                <button class="btn-icon" title="Application History" @onclick="() => ViewApplicationHistory(application)">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                                        <polyline points="14,2 14,8 20,8"/>
+                                                        <line x1="16" y1="13" x2="8" y2="13"/>
+                                                        <line x1="16" y1="17" x2="8" y2="17"/>
+                                                        <polyline points="10,9 9,9 8,9"/>
+                                                    </svg>
+                                                </button>
+                                                <button class="btn-icon approve" title="Approve Application" @onclick="() => ApproveApplication(application)" disabled="@(application.Status == "Approved")">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <polyline points="20,6 9,17 4,12"/>
+                                                    </svg>
+                                                </button>
+                                                <button class="btn-icon delete" title="Delete Application" @onclick="() => DeleteApplication(application)">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <polyline points="3,6 5,6 21,6"/>
+                                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                                        <line x1="10" y1="11" x2="10" y2="17"/>
+                                                        <line x1="14" y1="11" x2="14" y2="17"/>
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<!-- New Loan Application Modal -->
+@if (showNewApplicationModal)
+{
+    <div class="modal-overlay" @onclick="CloseNewApplicationModal">
+        <div class="modal-container" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h2>New Loan Application</h2>
+                <button class="modal-close" @onclick="CloseNewApplicationModal">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="newApplication" OnValidSubmit="SubmitApplication">
+                    <DataAnnotationsValidator />
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="customerName">Customer Name *</label>
+                            <input type="text" id="customerName" @bind="newApplication.ApplicantName" placeholder="Search customer..." class="form-control" />
+                            <ValidationMessage For="@(() => newApplication.ApplicantName)" />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="loanAmount">Loan Amount *</label>
+                            <input type="number" id="loanAmount" @bind="newApplication.Amount" class="form-control" />
+                            <ValidationMessage For="@(() => newApplication.Amount)" />
+                        </div>
+                        <div class="form-group">
+                            <label for="loanTerm">Loan Term *</label>
+                            <select id="loanTerm" @bind="newApplication.LoanTerm" class="form-control">
+                                <option value="">Select Loan Term</option>
+                                <option value="6 months">6 months</option>
+                                <option value="12 months">12 months</option>
+                                <option value="24 months">24 months</option>
+                                <option value="36 months">36 months</option>
+                                <option value="48 months">48 months</option>
+                                <option value="60 months">60 months</option>
+                            </select>
+                            <ValidationMessage For="@(() => newApplication.LoanTerm)" />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="loanPurpose">Loan Purpose *</label>
+                            <textarea id="loanPurpose" @bind="newApplication.Purpose" placeholder="Enter loan purpose" class="form-control" rows="3"></textarea>
+                            <ValidationMessage For="@(() => newApplication.Purpose)" />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="interestRate">Interest Rate (%) *</label>
+                            <input type="number" step="0.1" id="interestRate" @bind="newApplication.InterestRate" class="form-control" />
+                            <ValidationMessage For="@(() => newApplication.InterestRate)" />
+                        </div>
+                        <div class="form-group">
+                            <label for="employmentType">Employment Type (Auto)</label>
+                            <input type="text" id="employmentType" @bind="newApplication.EmploymentType" placeholder="Select customer first" class="form-control" disabled />
+                            <small class="form-text">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <path d="M12 6v6l4 2"/>
+                                </svg>
+                                Automatically set from customer profile
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="monthlyIncome">Monthly Income *</label>
+                            <input type="number" id="monthlyIncome" @bind="newApplication.Income" class="form-control" />
+                            <ValidationMessage For="@(() => newApplication.Income)" />
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseNewApplicationModal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Submit Application</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    // Loan Application Model
+    public class LoanApplicationModel
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string ApplicationId { get; set; } = "";
+        public string CustomerId { get; set; } = "";
+        
+        [Required(ErrorMessage = "Applicant name is required")]
+        public string ApplicantName { get; set; } = "";
+        
+        [Required(ErrorMessage = "Loan amount is required")]
+        [Range(1000, 10000000, ErrorMessage = "Amount must be between $1,000 and $10,000,000")]
+        public decimal Amount { get; set; }
+        
+        [Required(ErrorMessage = "Loan purpose is required")]
+        public string Purpose { get; set; } = "";
+        
+        public DateTime ApplicationDate { get; set; } = DateTime.Now;
+        public string Status { get; set; } = "Pending";
+        
+        [Required(ErrorMessage = "Interest rate is required")]
+        [Range(0.1, 50, ErrorMessage = "Interest rate must be between 0.1% and 50%")]
+        public decimal InterestRate { get; set; } = 5.5m;
+        
+        public string EmploymentType { get; set; } = "";
+        
+        [Required(ErrorMessage = "Monthly income is required")]
+        [Range(1, 999999999, ErrorMessage = "Monthly income is required")]
+        public decimal Income { get; set; }
+        
+        public string LoanTerm { get; set; } = "";
+        public string Notes { get; set; } = "";
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime LastUpdated { get; set; } = DateTime.Now;
+    }
+
+    // State Management
+    private List<LoanApplicationModel> allApplications = new();
+    
+    private bool isLoading = false;
+    private bool showNewApplicationModal = false;
+    private LoanApplicationModel newApplication = new();
+    
+    // Search and Filter
+    private string searchTerm = "";
+    private string selectedFilter = "All";
+    
+    // View and Pagination
+    private string viewMode = "table"; // "table" or "cards"
+    private int currentPage = 0;
+    private int pageSize = 10;
+    private int totalPages => (int)Math.Ceiling((double)GetDisplayApplications().Count / pageSize);
+
+    // Sorting
+    private string sortColumn = "ApplicationDate";
+    private bool sortAscending = false; // Most recent first
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSampleData();
+    }
+
+    private async Task LoadSampleData()
+    {
+        isLoading = true;
+        
+        // Enhanced sample loan application data
+        allApplications = new List<LoanApplicationModel>
+        {
+            new LoanApplicationModel 
+            { 
+                ApplicationId = "11",
+                CustomerId = "CUST-2024-001",
+                ApplicantName = "Roberto Cruz", 
+                Amount = 94486.97m,
+                Purpose = "Emergency Fund",
+                ApplicationDate = new DateTime(2025, 12, 17),
+                Status = "Rejected",
+                InterestRate = 10.28m,
+                EmploymentType = "Full-time",
+                Income = 32500.00m,
+                LoanTerm = "24 months"
+            },
+            new LoanApplicationModel 
+            { 
+                ApplicationId = "12",
+                CustomerId = "CUST-2024-002",
+                ApplicantName = "Hector Gomez", 
+                Amount = 222951.81m,
+                Purpose = "Emergency Fund",
+                ApplicationDate = new DateTime(2025, 12, 16),
+                Status = "Pending",
+                InterestRate = 12.09m,
+                EmploymentType = "Full-time",
+                Income = 37500.00m,
+                LoanTerm = "36 months"
+            },
+            new LoanApplicationModel 
+            { 
+                ApplicationId = "20",
+                CustomerId = "CUST-2024-003",
+                ApplicantName = "Luna Diaz", 
+                Amount = 307290.83m,
+                Purpose = "Home Improvement",
+                ApplicationDate = new DateTime(2025, 12, 12),
+                Status = "Pending",
+                InterestRate = 11.22m,
+                EmploymentType = "Full-time",
+                Income = 27500.00m,
+                LoanTerm = "48 months"
+            },
+            new LoanApplicationModel 
+            { 
+                ApplicationId = "5",
+                CustomerId = "CUST-2024-004",
+                ApplicantName = "Andres Bonifacio", 
+                Amount = 109650.99m,
+                Purpose = "Business Expansion",
+                ApplicationDate = new DateTime(2025, 12, 11),
+                Status = "Approved",
+                InterestRate = 13.43m,
+                EmploymentType = "Full-time",
+                Income = 60000.00m,
+                LoanTerm = "60 months"
+            },
+            new LoanApplicationModel 
+            { 
+                ApplicationId = "3",
+                CustomerId = "CUST-2024-005",
+                ApplicantName = "Gabriel Ramos", 
+                Amount = 60426.49m,
+                Purpose = "Business Expansion",
+                ApplicationDate = new DateTime(2025, 12, 10),
+                Status = "Pending",
+                InterestRate = 8.36m,
+                EmploymentType = "Full-time",
+                Income = 42500.00m,
+                LoanTerm = "36 months"
+            }
+        };
+        
+        isLoading = false;
+    }
+
+    // Search and Filter Methods
+    private async Task HandleSearch(ChangeEventArgs e)
+    {
+        searchTerm = e.Value?.ToString() ?? "";
+        currentPage = 0;
+        await Task.CompletedTask;
+    }
+
+    private List<LoanApplicationModel> GetDisplayApplications()
+    {
+        var applications = allApplications.AsQueryable();
+        
+        // Apply search filter
+        if (!string.IsNullOrEmpty(searchTerm))
+        {
+            applications = applications.Where(a => 
+                a.ApplicantName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                a.ApplicationId.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                a.Purpose.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                a.CustomerId.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+        }
+        
+        // Apply category filter
+        applications = selectedFilter switch
+        {
+            "Pending" => applications.Where(a => a.Status == "Pending"),
+            "Approved" => applications.Where(a => a.Status == "Approved"),
+            "Rejected" => applications.Where(a => a.Status == "Rejected"),
+            "Under Review" => applications.Where(a => a.Status == "Under Review"),
+            _ => applications
+        };
+
+        // Apply sorting
+        applications = sortColumn switch
+        {
+            "ApplicantName" => sortAscending ? applications.OrderBy(a => a.ApplicantName) : applications.OrderByDescending(a => a.ApplicantName),
+            "ApplicationId" => sortAscending ? applications.OrderBy(a => a.ApplicationId) : applications.OrderByDescending(a => a.ApplicationId),
+            "Amount" => sortAscending ? applications.OrderBy(a => a.Amount) : applications.OrderByDescending(a => a.Amount),
+            "Purpose" => sortAscending ? applications.OrderBy(a => a.Purpose) : applications.OrderByDescending(a => a.Purpose),
+            "ApplicationDate" => sortAscending ? applications.OrderBy(a => a.ApplicationDate) : applications.OrderByDescending(a => a.ApplicationDate),
+            "Status" => sortAscending ? applications.OrderBy(a => a.Status) : applications.OrderByDescending(a => a.Status),
+            "EmploymentType" => sortAscending ? applications.OrderBy(a => a.EmploymentType) : applications.OrderByDescending(a => a.EmploymentType),
+            "Income" => sortAscending ? applications.OrderBy(a => a.Income) : applications.OrderByDescending(a => a.Income),
+            _ => applications.OrderByDescending(a => a.ApplicationDate)
+        };
+        
+        return applications.ToList();
+    }
+
+    private List<LoanApplicationModel> GetPagedApplications()
+    {
+        var displayApplications = GetDisplayApplications();
+        return displayApplications.Skip(currentPage * pageSize).Take(pageSize).ToList();
+    }
+
+    private void ChangePage(int page)
+    {
+        currentPage = Math.Max(0, Math.Min(page, totalPages - 1));
+        StateHasChanged();
+    }
+
+    // Statistics Methods
+    private int GetApprovedCount()
+    {
+        return GetDisplayApplications().Count(a => a.Status == "Approved");
+    }
+
+    private int GetPendingCount()
+    {
+        return GetDisplayApplications().Count(a => a.Status == "Pending");
+    }
+
+    private string GetTotalAmountDisplay()
+    {
+        var applications = GetDisplayApplications();
+        if (!applications.Any()) return "$0";
+        
+        var totalAmount = applications.Sum(a => a.Amount);
+        return totalAmount.ToString("C0");
+    }
+
+    // Sorting Methods
+    private void SortBy(string column)
+    {
+        if (sortColumn == column)
+        {
+            sortAscending = !sortAscending;
+        }
+        else
+        {
+            sortColumn = column;
+            sortAscending = true;
+        }
+        StateHasChanged();
+    }
+
+    private string GetSortIcon(string column)
+    {
+        if (sortColumn != column) return "";
+        return sortAscending ? "?" : "?";
+    }
+
+    // Pagination Helper Methods
+    private int GetStartPage()
+    {
+        return Math.Max(0, currentPage - 2);
+    }
+
+    private int GetEndPage()
+    {
+        return Math.Min(totalPages - 1, currentPage + 2);
+    }
+
+    // View Mode Methods
+    private void SetViewMode(string mode)
+    {
+        viewMode = mode;
+        StateHasChanged();
+    }
+
+    private async Task UpdatePageSize(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int newSize))
+        {
+            pageSize = newSize;
+            currentPage = 0;
+            StateHasChanged();
+        }
+        await Task.CompletedTask;
+    }
+
+    // Utility Methods
+    private string GetInitials(string name)
+    {
+        if (string.IsNullOrEmpty(name)) 
+            return "LA";
+        
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length >= 2)
+        {
+            return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+        }
+        else if (parts.Length == 1 && parts[0].Length >= 2)
+        {
+            return parts[0].Substring(0, 2).ToUpper();
+        }
+        else if (parts.Length == 1 && parts[0].Length == 1)
+        {
+            return parts[0].ToUpper() + "A";
+        }
+        
+        return "LA"; // Default fallback for Loan Application
+    }
+
+    private string GetApplicationClass(string status)
+    {
+        return status.ToLower() switch
+        {
+            "approved" => "application-approved",
+            "pending" => "application-pending",
+            "rejected" => "application-rejected",
+            "under review" => "application-review",
+            _ => ""
+        };
+    }
+
+    private string GetStatusClass(string status)
+    {
+        return status.ToLower() switch
+        {
+            "approved" => "status-approved",
+            "pending" => "status-pending",
+            "rejected" => "status-rejected",
+            "under review" => "status-review",
+            _ => "status-default"
+        };
+    }
+
+    // Modal Methods
+    private void ShowNewApplicationModal()
+    {
+        newApplication = new LoanApplicationModel
+        {
+            ApplicationId = (allApplications.Count + 1).ToString(),
+            InterestRate = 5.5m
+        };
+        showNewApplicationModal = true;
+        StateHasChanged();
+    }
+
+    private void CloseNewApplicationModal()
+    {
+        showNewApplicationModal = false;
+        newApplication = new LoanApplicationModel();
+        StateHasChanged();
+    }
+
+    private async Task SubmitApplication()
+    {
+        newApplication.ApplicationId = (allApplications.Count + 1).ToString();
+        newApplication.CustomerId = $"CUST-2024-{allApplications.Count + 1:D3}";
+        
+        allApplications.Add(newApplication);
+        CloseNewApplicationModal();
+        
+        await Task.CompletedTask;
+        StateHasChanged();
+    }
+
+    // Enhanced Application Management Actions  
+    private void ExportApplications()
+    {
+        Console.WriteLine("Exporting application data...");
+    }
+
+    private void RefreshData()
+    {
+        Console.WriteLine("Refreshing application data...");
+        StateHasChanged();
+    }
+
+    private void ViewApplicationDetails(LoanApplicationModel application)
+    {
+        Console.WriteLine($"Viewing details for application: {application.ApplicationId}");
+    }
+
+    private void EditApplication(LoanApplicationModel application)
+    {
+        Console.WriteLine($"Editing application: {application.ApplicationId}");
+    }
+
+    private void ViewApplicationHistory(LoanApplicationModel application)
+    {
+        Console.WriteLine($"Viewing history for application: {application.ApplicationId}");
+    }
+
+    private void ApproveApplication(LoanApplicationModel application)
+    {
+        application.Status = "Approved";
+        application.LastUpdated = DateTime.Now;
+        StateHasChanged();
+        Console.WriteLine($"Application {application.ApplicationId} approved");
+    }
+
+    private void DeleteApplication(LoanApplicationModel application)
+    {
+        allApplications.Remove(application);
+        StateHasChanged();
+    }
+}

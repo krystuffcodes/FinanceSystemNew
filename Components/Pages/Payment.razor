@@ -1,0 +1,379 @@
+@page "/payment"
+@using System.ComponentModel.DataAnnotations
+
+<PageTitle>Payment Tracking - Fortress Finance</PageTitle>
+
+<div class="payment-tracking-container">
+    <div class="payment-header">
+        <h1>Payment Tracking</h1>
+        <div class="user-info">
+            <div class="user-avatar">A</div>
+            <div class="user-details">
+                <span class="user-name">Admin User</span>
+                <span class="user-role">Administrator</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-navigation">
+        <button class="tab-button @(activeTab == "add" ? "active" : "")" @onclick='() => SetActiveTab("add")'>
+            <span class="tab-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                    <line x1="1" y1="10" x2="23" y2="10"/>
+                    <path d="M12 14h4"/>
+                    <path d="M14 12v4"/>
+                </svg>
+            </span>
+            Add Payment
+        </button>
+        <button class="tab-button @(activeTab == "view" ? "active" : "")" @onclick='() => SetActiveTab("view")'>
+            <span class="tab-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14,2 14,8 20,8"/>
+                    <line x1="9" y1="15" x2="15" y2="15"/>
+                    <line x1="9" y1="12" x2="12" y2="12"/>
+                    <line x1="9" y1="18" x2="15" y2="18"/>
+                </svg>
+            </span>
+            View
+        </button>
+    </div>
+
+    <div class="tab-content">
+        @if (activeTab == "add")
+        {
+            <div class="add-payment-section">
+                <EditForm Model="newPayment" OnValidSubmit="ProcessPayment">
+                    <DataAnnotationsValidator />
+                    
+                    <div class="form-section">
+                        <h3 class="section-title">Customer Information</h3>
+                        <div class="form-group">
+                            <label for="customerName">Customer Name *</label>
+                            <InputText id="customerName" @bind-Value="newPayment.CustomerName" 
+                                      placeholder="Search customer..." class="form-control" />
+                            <ValidationMessage For="@(() => newPayment.CustomerName)" />
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-title">Basic Information</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="paymentDate">Payment Date *</label>
+                                <InputDate id="paymentDate" @bind-Value="newPayment.PaymentDate" class="form-control" />
+                                <ValidationMessage For="@(() => newPayment.PaymentDate)" />
+                            </div>
+                            <div class="form-group">
+                                <label for="amount">Amount *</label>
+                                <InputNumber id="amount" @bind-Value="newPayment.Amount" class="form-control" />
+                                <ValidationMessage For="@(() => newPayment.Amount)" />
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="paymentMethod">Payment Method *</label>
+                                <InputSelect id="paymentMethod" @bind-Value="newPayment.PaymentMethod" class="form-control">
+                                    <option value="">Select payment method</option>
+                                    <option value="Cash">Cash</option>
+                                    <option value="Bank Transfer">Bank Transfer</option>
+                                    <option value="Credit Card">Credit Card</option>
+                                </InputSelect>
+                                <ValidationMessage For="@(() => newPayment.PaymentMethod)" />
+                            </div>
+                            <div class="form-group">
+                                <label for="paymentStatus">Payment Status *</label>
+                                <InputSelect id="paymentStatus" @bind-Value="newPayment.Status" class="form-control">
+                                    <option value="">Select status</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Failed">Failed</option>
+                                </InputSelect>
+                                <ValidationMessage For="@(() => newPayment.Status)" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-title">Payment Reference</h3>
+                        <div class="form-group">
+                            <label for="referenceId">Reference ID *</label>
+                            <InputText id="referenceId" @bind-Value="newPayment.ReferenceId" 
+                                      placeholder="Auto-generated" class="form-control" />
+                            <ValidationMessage For="@(() => newPayment.ReferenceId)" />
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <InputTextArea id="description" @bind-Value="newPayment.Description" 
+                                          placeholder="Brief description" class="form-control" rows="3" />
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" @onclick="ClearForm">Clear All</button>
+                        <button type="submit" class="btn btn-primary" disabled="@isProcessing">
+                            @if (isProcessing)
+                            {
+                                <span>Processing...</span>
+                            }
+                            else
+                            {
+                                <span>Process Payment</span>
+                            }
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        }
+        else if (activeTab == "view")
+        {
+            <div class="view-payments-section">
+                <div class="view-header">
+                    <h3>Payment Records (@allPayments.Count)</h3>
+                </div>
+
+                @if (isLoading)
+                {
+                    <div class="loading-container">
+                        <div class="loading-spinner"></div>
+                        <span>Loading payment records...</span>
+                    </div>
+                }
+                else if (!allPayments.Any())
+                {
+                    <div class="empty-container">
+                        <span class="empty-icon">??</span>
+                        <h4>No Payment Records Found</h4>
+                        <p>No payments found. Add new payments to see them here.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-container">
+                        <table class="payments-table">
+                            <thead>
+                                <tr>
+                                    <th>Reference ID</th>
+                                    <th>Customer</th>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Method</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var payment in allPayments.OrderByDescending(p => p.PaymentDate))
+                                {
+                                    <tr class="payment-row @GetRowClass(payment.Status)">
+                                        <td>
+                                            <strong>@payment.ReferenceId</strong>
+                                        </td>
+                                        <td>@payment.CustomerName</td>
+                                        <td>@payment.PaymentDate.ToString("MMM dd, yyyy")</td>
+                                        <td><strong>?@payment.Amount.ToString("N2")</strong></td>
+                                        <td>@payment.PaymentMethod</td>
+                                        <td>
+                                            <span class="status-badge @GetStatusClass(payment.Status)">
+                                                @payment.Status
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="btn-icon" title="View Details" @onclick="() => ViewPaymentDetails(payment)">???</button>
+                                                <button class="btn-icon" title="Edit Payment" @onclick="() => EditPayment(payment)">??</button>
+                                                <button class="btn-icon delete" title="Delete Payment" @onclick="() => DeletePayment(payment)">???</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    public class PaymentModel
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        
+        [Required(ErrorMessage = "Customer name is required")]
+        public string CustomerName { get; set; } = "";
+        
+        [Required(ErrorMessage = "Payment date is required")]
+        public DateTime PaymentDate { get; set; } = DateTime.Today;
+        
+        [Required(ErrorMessage = "Amount is required")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Amount must be greater than 0")]
+        public decimal Amount { get; set; }
+        
+        [Required(ErrorMessage = "Payment method is required")]
+        public string PaymentMethod { get; set; } = "";
+        
+        [Required(ErrorMessage = "Payment status is required")]
+        public string Status { get; set; } = "";
+        
+        [Required(ErrorMessage = "Reference ID is required")]
+        public string ReferenceId { get; set; } = "";
+        
+        public string Description { get; set; } = "";
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+    }
+
+    private string activeTab = "add";
+    private PaymentModel newPayment = new();
+    private List<PaymentModel> allPayments = new();
+    
+    private bool isLoading = false;
+    private bool isProcessing = false;
+    private bool autoGenerateReference = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSampleData();
+        GenerateReferenceId();
+    }
+
+    private async Task LoadSampleData()
+    {
+        isLoading = true;
+        
+        allPayments = new List<PaymentModel>
+        {
+            new PaymentModel 
+            { 
+                CustomerName = "John Doe", 
+                PaymentDate = DateTime.Today.AddDays(-1), 
+                Amount = 15000, 
+                PaymentMethod = "Bank Transfer", 
+                Status = "Completed", 
+                ReferenceId = "PAY-2024-001",
+                Description = "Monthly loan payment"
+            },
+            new PaymentModel 
+            { 
+                CustomerName = "Jane Smith", 
+                PaymentDate = DateTime.Today.AddDays(-2), 
+                Amount = 8500, 
+                PaymentMethod = "Cash", 
+                Status = "Completed", 
+                ReferenceId = "PAY-2024-002",
+                Description = "Partial loan payment"
+            }
+        };
+        
+        isLoading = false;
+    }
+
+    private void SetActiveTab(string tab)
+    {
+        activeTab = tab;
+        if (tab == "add")
+        {
+            GenerateReferenceId();
+        }
+    }
+
+    private void GenerateReferenceId()
+    {
+        if (autoGenerateReference)
+        {
+            var nextNumber = allPayments.Count + 1;
+            newPayment.ReferenceId = $"PAY-2024-{nextNumber:D3}";
+        }
+    }
+
+    private async Task ProcessPayment()
+    {
+        isProcessing = true;
+        
+        try
+        {
+            newPayment.CreatedAt = DateTime.Now;
+            
+            allPayments.Add(new PaymentModel
+            {
+                Id = newPayment.Id,
+                CustomerName = newPayment.CustomerName,
+                PaymentDate = newPayment.PaymentDate,
+                Amount = newPayment.Amount,
+                PaymentMethod = newPayment.PaymentMethod,
+                Status = newPayment.Status,
+                ReferenceId = newPayment.ReferenceId,
+                Description = newPayment.Description,
+                CreatedAt = newPayment.CreatedAt
+            });
+            
+            ClearForm();
+            SetActiveTab("view");
+            
+            await Task.Delay(100);
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private void ClearForm()
+    {
+        newPayment = new PaymentModel { PaymentDate = DateTime.Today };
+        GenerateReferenceId();
+    }
+
+    private string GetRowClass(string status)
+    {
+        return status.ToLower() switch
+        {
+            "completed" => "completed",
+            "pending" => "pending",
+            "failed" => "failed",
+            _ => ""
+        };
+    }
+
+    private string GetStatusClass(string status)
+    {
+        return status.ToLower() switch
+        {
+            "completed" => "status-completed",
+            "pending" => "status-pending",
+            "failed" => "status-failed",
+            _ => ""
+        };
+    }
+
+    private void ViewPaymentDetails(PaymentModel payment)
+    {
+        Console.WriteLine($"Viewing details for payment: {payment.ReferenceId}");
+    }
+
+    private void EditPayment(PaymentModel payment)
+    {
+        newPayment = new PaymentModel
+        {
+            Id = payment.Id,
+            CustomerName = payment.CustomerName,
+            PaymentDate = payment.PaymentDate,
+            Amount = payment.Amount,
+            PaymentMethod = payment.PaymentMethod,
+            Status = payment.Status,
+            ReferenceId = payment.ReferenceId,
+            Description = payment.Description
+        };
+        autoGenerateReference = false;
+        SetActiveTab("add");
+    }
+
+    private void DeletePayment(PaymentModel payment)
+    {
+        allPayments.Remove(payment);
+        StateHasChanged();
+    }
+}
