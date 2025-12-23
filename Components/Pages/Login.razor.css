@@ -164,7 +164,7 @@
 }
 
 .form-input {
-    padding: 1rem 1.25rem;
+    padding: 1.25rem 1.5rem;
     border: 1px solid #e5e7eb;
     border-radius: 8px;
     font-size: 0.95rem;
@@ -172,6 +172,8 @@
     background: #f9fafb;
     color: #374151;
     font-family: inherit;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .form-input::placeholder {
@@ -189,32 +191,6 @@
 .form-input.error {
     border-color: #ef4444;
     background: #fef2f2;
-}
-
-.password-container {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-.password-toggle {
-    position: absolute;
-    right: 1rem;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #6b7280;
-    padding: 0.25rem;
-    border-radius: 4px;
-    transition: color 0.2s ease;
-}
-
-.password-toggle:hover {
-    color: #374151;
-}
-
-.password-toggle svg {
-    stroke: currentColor;
 }
 
 /* Sign In Button */
