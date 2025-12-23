@@ -545,10 +545,13 @@
     stroke: #721c24;
 }
 
-.btn-icon:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
+.btn-icon.archive:hover {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.btn-icon.archive:hover svg {
+    stroke: #856404;
 }
 
 /* Modal Styles */

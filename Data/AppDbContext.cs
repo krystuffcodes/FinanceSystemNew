@@ -14,6 +14,7 @@ namespace FinanceSystem1.Data
         public DbSet<Payment> Payments { get; set; }
         public DbSet<RevenueData> RevenueDatas { get; set; }
         public DbSet<OverdueAccount> OverdueAccounts { get; set; }
+        public DbSet<User> Users { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -53,6 +54,18 @@ namespace FinanceSystem1.Data
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.CustomerId).HasMaxLength(50);
                 entity.Property(e => e.CustomerName).HasMaxLength(200);
+            });
+
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Username).HasMaxLength(100).IsRequired();
+                entity.HasIndex(e => e.Username).IsUnique();
+                entity.Property(e => e.Password).HasMaxLength(255).IsRequired();
+                entity.Property(e => e.Email).HasMaxLength(200);
+                entity.Property(e => e.FirstName).HasMaxLength(100);
+                entity.Property(e => e.LastName).HasMaxLength(100);
+                entity.Property(e => e.Role).HasMaxLength(50);
             });
         }
     }
@@ -140,5 +153,20 @@ namespace FinanceSystem1.Data
         public int? DaysOverdue { get; set; }
         public DateTime? LastPaymentDate { get; set; } = DateTime.Now;
         public DateTime? NextDueDate { get; set; } = DateTime.Now;
+    }
+
+    public class User
+    {
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public string Username { get; set; } = "";
+        public string Password { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string FirstName { get; set; } = "";
+        public string LastName { get; set; } = "";
+        public string Role { get; set; } = "User";
+        public bool IsActive { get; set; } = true;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime? LastLoginAt { get; set; }
+        public DateTime LastUpdated { get; set; } = DateTime.Now;
     }
 }

@@ -1,3 +1,5 @@
+/* Enhanced Dashboard Styles with Database Integration */
+
 .dashboard-header {
     display: flex;
     justify-content: space-between;
@@ -6,6 +8,7 @@
     background: white;
     border-bottom: 1px solid #e0e0e0;
     margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .dashboard-header h1 {
@@ -32,6 +35,7 @@
     justify-content: center;
     font-weight: bold;
     font-size: 1.2rem;
+    box-shadow: 0 2px 8px rgba(79, 195, 247, 0.3);
 }
 
 .user-details {
@@ -49,6 +53,64 @@
     font-size: 0.8rem;
 }
 
+/* Database Error Banner */
+.db-error-banner {
+    background: #ffe6e6;
+    border: 1px solid #ffb3b3;
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 0 2rem 2rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: #900;
+}
+
+.error-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.error-content {
+    flex: 1;
+}
+
+.error-content strong {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.error-content p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* Loading State */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    text-align: center;
+    color: #666;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #4fc3f7;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
 .dashboard-container {
     padding: 0 2rem;
     max-width: 1400px;
@@ -64,52 +126,70 @@
 
 .kpi-card {
     background: white;
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 1.5rem;
     display: flex;
     align-items: center;
     gap: 1rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     border: 1px solid #f0f0f0;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #4fc3f7, #29b6f6);
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
 .kpi-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.kpi-card:hover::before {
+    opacity: 1;
 }
 
 .kpi-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.8rem;
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
     flex-shrink: 0;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
-    font-family: 'Segoe UI Emoji', 'Segoe UI', sans-serif;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    margin-bottom: 1rem;
+    color: inherit;
 }
 
-.total-revenue .kpi-icon {
-    background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
-    color: #4caf50;
+.kpi-icon svg {
+    stroke: currentColor;
 }
 
-.active-loans .kpi-icon {
-    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-    color: #2196f3;
+.total-revenue .kpi-icon svg {
+    stroke: #4caf50;
 }
 
-.overdue-accounts .kpi-icon {
-    background: linear-gradient(135deg, #fff3e0, #ffe0b2);
-    color: #ff9800;
+.active-loans .kpi-icon svg {
+    stroke: #2196f3;
 }
 
-.total-customers .kpi-icon {
-    background: linear-gradient(135deg, #f3e5f5, #e1bee7);
-    color: #9c27b0;
+.overdue-accounts .kpi-icon svg {
+    stroke: #ff9800;
+}
+
+.total-customers .kpi-icon svg {
+    stroke: #9c27b0;
 }
 
 .kpi-content {
@@ -119,43 +199,52 @@
 .kpi-label {
     color: #666;
     font-size: 0.8rem;
-    font-weight: 500;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 0.25rem;
+    letter-spacing: 0.8px;
+    margin-bottom: 0.5rem;
 }
 
 .kpi-value {
-    font-size: 1.8rem;
-    font-weight: bold;
+    font-size: 2rem;
+    font-weight: 700;
     color: #333;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    line-height: 1;
 }
 
 .kpi-trend {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.8rem;
     color: #666;
-    font-size: 0.85rem;
 }
 
+.kpi-trend svg {
+    stroke: #4caf50;
+}
+
+/* Charts Section */
 .charts-section {
     display: grid;
     grid-template-columns: 2fr 1fr;
-    gap: 1.5rem;
+    gap: 2rem;
     margin-bottom: 2rem;
 }
 
 .chart-container {
     background: white;
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 1.5rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     border: 1px solid #f0f0f0;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: all 0.3s ease;
 }
 
 .chart-container:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
 }
 
 .chart-header {
@@ -163,55 +252,173 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f8f9fa;
 }
 
 .chart-header h3 {
-    margin: 0;
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #333;
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.chart-header h3 svg {
+    stroke: #4285f4;
+}
+
+.chart-icon {
+    font-size: 1.3rem;
 }
 
 .time-selector {
     border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 0.5rem;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
     background: white;
     font-size: 0.9rem;
     cursor: pointer;
-    transition: border-color 0.2s ease;
+    transition: all 0.2s ease;
+    font-weight: 500;
 }
 
 .time-selector:hover {
     border-color: #4fc3f7;
+    box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.1);
 }
 
-.chart-placeholder {
-    height: 200px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.time-selector:focus {
+    outline: none;
+    border-color: #4fc3f7;
+    box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.2);
+}
+
+/* Revenue Chart Data */
+.revenue-chart-data {
+    min-height: 200px;
+}
+
+.revenue-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
     background: #f8f9fa;
-    border-radius: 4px;
-    color: #666;
-    border: 2px dashed #e0e0e0;
+    border-radius: 8px;
 }
 
-.placeholder-content {
+.summary-item {
     text-align: center;
 }
 
-.placeholder-icon {
-    font-size: 3rem;
+.summary-label {
+    display: block;
+    color: #666;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     margin-bottom: 0.5rem;
-    opacity: 0.6;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
-    font-family: 'Segoe UI Emoji', 'Segoe UI', sans-serif;
 }
 
+.summary-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #333;
+}
+
+.revenue-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.revenue-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+}
+
+.revenue-item:hover {
+    background: #f8f9fa;
+}
+
+.revenue-item:last-child {
+    border-bottom: none;
+}
+
+.revenue-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.customer-name {
+    font-weight: 600;
+    color: #333;
+}
+
+.loan-amount {
+    color: #4caf50;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.revenue-details {
+    display: flex;
+    flex-direction: column;
+    align-items: end;
+    gap: 0.25rem;
+}
+
+.interest-rate {
+    color: #666;
+    font-size: 0.85rem;
+}
+
+/* Status badges */
+.status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-active {
+    background: #e8f5e8;
+    color: #2e7d32;
+}
+
+.status-completed {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.status-pending {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+.status-rejected {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.status-default {
+    background: #f5f5f5;
+    color: #616161;
+}
+
+/* Collection Rate Chart */
 .circular-chart {
     display: flex;
     flex-direction: column;
@@ -220,135 +427,272 @@
 }
 
 .chart-circle {
-    width: 120px;
-    height: 120px;
-    border: 8px solid #e0e0e0;
+    width: 140px;
+    height: 140px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
     background: #f8f9fa;
+    box-shadow: inset 0 0 0 8px #e0e0e0;
 }
 
 .percentage {
-    font-size: 2rem;
-    font-weight: bold;
+    font-size: 2.2rem;
+    font-weight: 700;
     color: #4fc3f7;
 }
 
 .chart-label {
-    color: #666;
-    font-size: 0.9rem;
-    text-align: center;
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 0.3rem;
+    gap: 0.25rem;
+}
+
+.chart-label svg {
+    stroke: #666;
 }
 
 .completion-stats {
     display: flex;
     gap: 2rem;
-    margin-top: 1rem;
+    margin-top: 1.5rem;
 }
 
 .stat {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.5rem;
 }
 
 .stat .label {
-    color: #666;
-    font-size: 0.8rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
     display: flex;
     align-items: center;
-    gap: 0.3rem;
+    gap: 0.25rem;
+    color: #666;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat .label svg {
+    stroke: currentColor;
 }
 
 .stat .value {
-    font-size: 1.5rem;
-    font-weight: bold;
+    font-size: 1.8rem;
+    font-weight: 700;
     color: #333;
 }
 
+/* Bottom Section */
 .bottom-section {
     display: grid;
     grid-template-columns: 2fr 1fr;
-    gap: 1.5rem;
+    gap: 2rem;
 }
 
-.performance-trend,
+.recent-activity,
 .key-metrics {
     background: white;
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 1.5rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     border: 1px solid #f0f0f0;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: all 0.3s ease;
 }
 
-.performance-trend:hover,
+.recent-activity:hover,
 .key-metrics:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
 }
 
 .subtitle {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
     color: #666;
     font-size: 0.85rem;
+    font-weight: 500;
     margin-top: 0.25rem;
 }
 
-.metrics-content {
-    margin-top: 1.5rem;
-}
-
-.metric-item {
+/* Activity Tabs */
+.activity-tabs {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid #f0f0f0;
-    transition: background-color 0.2s ease;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #f0f0f0;
 }
 
-.metric-item:last-child {
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #666;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tab-btn:hover {
+    color: #4fc3f7;
+    background: rgba(79, 195, 247, 0.05);
+}
+
+.tab-btn.active {
+    color: #4fc3f7;
+    border-bottom-color: #4fc3f7;
+    background: rgba(79, 195, 247, 0.05);
+}
+
+/* Activity List */
+.activity-content {
+    min-height: 300px;
+}
+
+.activity-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+    transition: all 0.2s ease;
+}
+
+.activity-item:hover {
+    background: #f8f9fa;
+    transform: translateX(4px);
+}
+
+.activity-item:last-child {
     border-bottom: none;
 }
 
-.metric-item:hover {
-    background-color: #f8f9fa;
-    margin: 0 -1rem;
-    padding: 0.75rem 1rem;
-    border-radius: 4px;
-}
-
-.metric-label {
-    color: #666;
-    font-size: 0.9rem;
+.activity-icon {
     display: flex;
     align-items: center;
-    gap: 0.3rem;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-right: 1rem;
 }
 
-.metric-value {
-    font-weight: 600;
-    color: #333;
+.payment-icon {
+    background: rgba(76, 175, 80, 0.1);
 }
 
-/* Loading animation for placeholders */
-.kpi-value, .metric-value, .percentage {
-    position: relative;
+.payment-icon svg {
+    stroke: #4caf50;
 }
 
-.kpi-value:contains("--"), .metric-value:contains("--"), .percentage:contains("--") {
-    color: #bbb;
+.application-icon {
+    background: rgba(33, 150, 243, 0.1);
+}
+
+.application-icon svg {
+    stroke: #2196f3;
+}
+
+/* Error banner icon styling */
+.error-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    color: #ff9800;
+}
+
+.error-icon svg {
+    stroke: #ff9800;
+}
+
+/* Metric label icon styling */
+.metric-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: #666;
+    font-weight: 500;
+}
+
+.metric-label svg {
+    stroke: #666;
+}
+
+/* Tab button icon styling */
+.tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tab-btn svg {
+    stroke: currentColor;
+}
+
+/* Button icon styling */
+.btn svg {
+    stroke: currentColor;
+    margin-right: 0.5rem;
+}
+
+/* Small icon styling */
+.small-icon {
+    font-size: 0.9rem;
+    margin-right: 0.3rem;
+}
+
+/* Scrollbar styling */
+.revenue-list::-webkit-scrollbar,
+.activity-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.revenue-list::-webkit-scrollbar-track,
+.activity-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.revenue-list::-webkit-scrollbar-thumb,
+.activity-list::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.revenue-list::-webkit-scrollbar-thumb:hover,
+.activity-list::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .charts-section,
+    .bottom-section {
+        grid-template-columns: 1fr;
+    }
+    
+    .revenue-summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 @media (max-width: 768px) {
@@ -356,11 +700,7 @@
         flex-direction: column;
         gap: 1rem;
         text-align: center;
-    }
-
-    .charts-section,
-    .bottom-section {
-        grid-template-columns: 1fr;
+        padding: 1rem;
     }
 
     .kpi-section {
@@ -371,62 +711,77 @@
         padding: 0 1rem;
     }
     
+    .db-error-banner {
+        margin: 0 1rem 2rem 1rem;
+        flex-direction: column;
+        text-align: center;
+    }
+    
     .completion-stats {
         gap: 1rem;
     }
+    
+    .revenue-summary {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .activity-tabs {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    .tab-btn {
+        justify-content: center;
+        padding: 0.75rem;
+    }
+
+    .kpi-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 1.25rem;
+    }
+
+    .kpi-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+
+    .kpi-value {
+        font-size: 1.6rem;
+    }
 }
 
-/* Enhanced emoji styling */
-.chart-header h3 {
-    margin: 0;
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #333;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+@media (max-width: 480px) {
+    .dashboard-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .chart-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+
+    .chart-header h3 {
+        font-size: 1.1rem;
+    }
+
+    .activity-item {
+        padding: 0.75rem;
+        gap: 0.75rem;
+    }
+
+    .activity-icon {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
+    }
+
+    .metric-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
 }
-
-.chart-icon {
-    font-size: 1.2rem;
-    font-family: 'Segoe UI Emoji', 'Segoe UI', sans-serif;
-}
-
-.small-icon {
-    font-size: 0.9rem;
-    font-family: 'Segoe UI Emoji', 'Segoe UI', sans-serif;
-    margin-right: 0.3rem;
-}
-
-/* Ensure emoji font support */
-body, html {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Segoe UI Emoji';
-}
-
-/* Add subtle glow to icons */
-.kpi-icon,
-.placeholder-icon,
-.chart-icon,
-.small-icon {
-    text-shadow: 0 0 10px rgba(255,255,255,0.8);
-}
-
-/* Alternative CSS icons if HTML entities don't work */
-.icon-money::before { content: "$"; font-weight: bold; color: #4caf50; }
-.icon-bank::before { content: "??"; }
-.icon-warning::before { content: "?"; color: #ff9800; }
-.icon-users::before { content: "??"; }
-.icon-chart::before { content: "??"; }
-.icon-trend::before { content: "??"; }
-.icon-target::before { content: "??"; }
-
-/* Fallback for when emojis don't work */
-.no-emoji .kpi-icon {
-    font-size: 1.5rem;
-    font-weight: bold;
-}
-
-.no-emoji .total-revenue .kpi-icon::before { content: "$"; }
-.no-emoji .active-loans .kpi-icon::before { content: "?"; }
-.no-emoji .overdue-accounts .kpi-icon::before { content: "!"; }
-.no-emoji .total-customers .kpi-icon::before { content: "?"; }

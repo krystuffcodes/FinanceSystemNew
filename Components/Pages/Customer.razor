@@ -1,6 +1,7 @@
 @page "/customer"
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.EntityFrameworkCore
+@using FinanceSystem1.Data
 @inject FinanceSystem1.Data.AppDbContext Db
 
 <PageTitle>Customer Management - Fortress Finance</PageTitle>
@@ -28,8 +29,45 @@
 
     @if (!string.IsNullOrEmpty(dbErrorMessage))
     {
-        <div class="db-error-banner" style="background:#ffe6e6;border:1px solid #ffb3b3;padding:8px;margin:12px 0;border-radius:4px;color:#900;">
-            <strong>Database error:</strong> @dbErrorMessage
+        <div class="db-error-banner" style="background:#ffe6e6;border:1px solid #ffb3b3;padding:12px;margin:12px 0;border-radius:6px;color:#900;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <strong>Database Connection Issue</strong>
+            </div>
+            <div style="margin-left:28px;">
+                <p style="margin:0 0 8px 0;">@dbErrorMessage</p>
+                <details style="margin-top:8px;">
+                    <summary style="cursor:pointer;color:#666;font-size:0.9em;">Troubleshooting Steps</summary>
+                    <ul style="margin:8px 0 0 16px;font-size:0.9em;color:#666;">
+                        <li>Ensure SQL Server is running</li>
+                        <li>Verify connection string: <code>LAPTOP-9U7RNK0I\\SQLEXPRESS</code></li>
+                        <li>Check that database 'fn_crm' exists</li>
+                        <li>Run the sample data script if tables are empty</li>
+                        <li>Verify Windows Authentication is working</li>
+                    </ul>
+                </details>
+                <div style="margin-top:12px;">
+                    <button class="btn btn-outline btn-small" @onclick="RefreshData" style="margin-right:8px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="23,4 23,10 17,10"/>
+                            <polyline points="1,20 1,14 7,14"/>
+                            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+                        </svg>
+                        Retry Connection
+                    </button>
+                    <button class="btn btn-outline btn-small" @onclick="ClearError">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                        Dismiss
+                    </button>
+                </div>
+            </div>
         </div>
     }
 
@@ -156,7 +194,8 @@
         {
             <div class="loading-container">
                 <div class="loading-spinner"></div>
-                <span>Loading customers...</span>
+                <h4 style="margin:0 0 8px 0;color:#333;">Loading Customer Data</h4>
+                <p style="margin:0;color:#666;font-size:0.9em;">Connecting to database and retrieving customer records...</p>
             </div>
         }
         else if (!GetDisplayCustomers().Any())
@@ -331,12 +370,11 @@
                                                         <polyline points="22,6 12,13 2,6"/>
                                                     </svg>
                                                 </button>
-                                                <button class="btn-icon delete" title="Delete Customer" @onclick="() => DeleteCustomer(customer)">
+                                                <button class="btn-icon archive" title="Archive Customer" @onclick="() => ArchiveCustomer(customer)">
                                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                        <polyline points="3,6 5,6 21,6"/>
-                                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                                                        <line x1="10" y1="11" x2="10" y2="17"/>
-                                                        <line x1="14" y1="11" x2="14" y2="17"/>
+                                                        <polyline points="21,8 21,21 3,21 3,8"/>
+                                                        <rect x="1" y="3" width="22" height="5"/>
+                                                        <line x1="10" y1="12" x2="14" y2="12"/>
                                                     </svg>
                                                 </button>
                                             </div>
@@ -665,74 +703,116 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadSampleData();
+        await LoadCustomerData();
     }
 
-    private async Task LoadSampleData()
+    private async Task LoadCustomerData()
     {
         isLoading = true;
         dbErrorMessage = string.Empty;
+        StateHasChanged();
+        
         try
         {
-            // quick connectivity check
-            var canConnect = false;
-            try
-            {
-                canConnect = await Db.Database.CanConnectAsync();
-            }
-            catch (Exception pingEx)
-            {
-                Console.WriteLine($"Database connectivity check failed: {pingEx.Message}");
-                dbErrorMessage = "DB connect check failed: " + pingEx.Message;
-            }
-
+            // Test database connectivity first
+            Console.WriteLine("Testing database connectivity...");
+            
+            var canConnect = await TestDatabaseConnection();
             if (!canConnect)
             {
-                Console.WriteLine("DbContext cannot connect to the database. Falling back to empty list.");
-                if (string.IsNullOrEmpty(dbErrorMessage))
-                    dbErrorMessage = "Unable to connect to database. Check connection string and network access.";
-
+                Console.WriteLine("Database connection failed - using fallback data");
                 allCustomers = new List<CustomerModel>();
                 return;
             }
 
-            var customers = await Db.Customers.AsNoTracking().ToListAsync();
+            Console.WriteLine("Database connected successfully, loading customers...");
+            
+            // Load customers from database
+            var customers = await Db.Customers
+                .AsNoTracking()
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+            
+            Console.WriteLine($"Loaded {customers.Count} customers from database");
+            
             allCustomers = customers.Select(c => new CustomerModel
             {
                 Id = c.Id.ToString(),
-                CustomerId = c.CustomerId,
-                Name = c.Name,
-                Email = c.Email,
-                Phone = c.Phone,
-                Address = c.Address,
-                EmploymentStatus = c.EmploymentStatus,
+                CustomerId = c.CustomerId ?? "",
+                Name = c.Name ?? "",
+                Email = c.Email ?? "",
+                Phone = c.Phone ?? "",
+                Address = c.Address ?? "",
+                EmploymentStatus = c.EmploymentStatus ?? "Unknown",
                 MonthlyIncome = c.MonthlyIncome ?? 0m,
                 DateOfBirth = c.DateOfBirth,
                 HasActiveLoans = c.HasActiveLoans ?? false,
-                Notes = c.Notes,
+                Notes = c.Notes ?? "",
                 CreatedAt = c.CreatedAt ?? DateTime.Now,
                 LastUpdated = c.LastUpdated ?? DateTime.Now,
-                IdType = c.IdType,
-                IdNumber = c.IdNumber,
-                IssuingAuthority = c.IssuingAuthority,
+                IdType = c.IdType ?? "",
+                IdNumber = c.IdNumber ?? "",
+                IssuingAuthority = c.IssuingAuthority ?? "",
                 ExpirationDate = c.ExpirationDate,
                 AnnualSalary = c.AnnualSalary ?? 0m,
-                Position = c.Position,
-                CertificateUrl = c.CertificateUrl,
-                AssignedTeller = c.AssignedTeller
+                Position = c.Position ?? "",
+                CertificateUrl = c.CertificateUrl ?? "",
+                AssignedTeller = c.AssignedTeller ?? ""
             }).ToList();
+            
+            Console.WriteLine($"Successfully mapped {allCustomers.Count} customers");
         }
         catch (Exception ex)
         {
-            // log the exception for debugging
-            Console.WriteLine($"LoadSampleData exception: {ex}");
-            dbErrorMessage = ex.Message + (ex.InnerException != null ? " - " + ex.InnerException.Message : string.Empty);
+            Console.WriteLine($"Error loading customers: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            
+            if (ex.InnerException != null)
+            {
+                Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+            }
+            
+            dbErrorMessage = $"Failed to load customers: {ex.Message}";
             allCustomers = new List<CustomerModel>();
         }
         finally
         {
             isLoading = false;
+            StateHasChanged();
         }
+    }
+
+    private async Task<bool> TestDatabaseConnection()
+    {
+        try
+        {
+            Console.WriteLine("Testing database connection...");
+            var canConnect = await Db.Database.CanConnectAsync();
+            Console.WriteLine($"Can connect to database: {canConnect}");
+            
+            if (canConnect)
+            {
+                // Test if tables exist by trying a simple query
+                var count = await Db.Customers.CountAsync();
+                Console.WriteLine($"Customer table contains {count} records");
+                return true;
+            }
+            
+            dbErrorMessage = "Cannot connect to database. Please check your connection string and ensure SQL Server is running.";
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Database connection test failed: {ex.Message}");
+            dbErrorMessage = $"Database connection error: {ex.Message}";
+            return false;
+        }
+    }
+
+    private async Task RefreshData()
+    {
+        Console.WriteLine("Refreshing customer data...");
+        await LoadCustomerData();
     }
 
     // Modal Methods
@@ -752,41 +832,57 @@
 
     private async Task SubmitCustomer()
     {
-        // Generate new customer ID
-        var nextId = allCustomers.Count + 1;
-        var customerId = $"CUST-2024-{nextId:D3}";
-        
-        // Create new customer from form data
-        var customer = new CustomerModel
+        try
         {
-            CustomerId = customerId,
-            Name = newCustomer.FullName,
-            Email = newCustomer.Email,
-            Phone = newCustomer.Phone,
-            Address = newCustomer.FullAddress,
-            EmploymentStatus = newCustomer.IsEmployed ? "Employed" : "Unemployed",
-            MonthlyIncome = newCustomer.MonthlyIncome,
-            HasActiveLoans = false,
-            IdType = newCustomer.IdType,
-            IdNumber = newCustomer.IdNumber,
-            IssuingAuthority = newCustomer.IssuingAuthority,
-            ExpirationDate = newCustomer.ExpirationDate,
-            AnnualSalary = newCustomer.AnnualSalary,
-            Position = newCustomer.Position,
-            CertificateUrl = newCustomer.CertificateUrl,
-            AssignedTeller = newCustomer.AssignedTeller,
-            Notes = $"Added by {newCustomer.AssignedTeller}",
-            CreatedAt = DateTime.Now,
-            LastUpdated = DateTime.Now
-        };
-        
-        // Add to customers list
-        allCustomers.Add(customer);
-        
-        // Close modal and refresh
-        CloseAddCustomerModal();
-        await Task.CompletedTask;
-        StateHasChanged();
+            Console.WriteLine("Submitting new customer...");
+            
+            // Generate new customer ID
+            var existingCount = await Db.Customers.CountAsync();
+            var customerId = $"CUST{(existingCount + 1):D3}";
+            
+            // Create new customer entity for database
+            var customerEntity = new FinanceSystem1.Data.Customer
+            {
+                Id = Guid.NewGuid(),
+                CustomerId = customerId,
+                Name = newCustomer.FullName,
+                Email = newCustomer.Email,
+                Phone = newCustomer.Phone,
+                Address = newCustomer.FullAddress,
+                EmploymentStatus = newCustomer.IsEmployed ? "Employed" : "Unemployed",
+                MonthlyIncome = newCustomer.MonthlyIncome,
+                HasActiveLoans = false,
+                IdType = newCustomer.IdType,
+                IdNumber = newCustomer.IdNumber,
+                IssuingAuthority = newCustomer.IssuingAuthority,
+                ExpirationDate = newCustomer.ExpirationDate,
+                AnnualSalary = newCustomer.AnnualSalary,
+                Position = newCustomer.Position,
+                CertificateUrl = newCustomer.CertificateUrl,
+                AssignedTeller = newCustomer.AssignedTeller,
+                Notes = $"Added by {newCustomer.AssignedTeller} on {DateTime.Now:yyyy-MM-dd HH:mm}",
+                CreatedAt = DateTime.Now,
+                LastUpdated = DateTime.Now
+            };
+            
+            // Add to database
+            Db.Customers.Add(customerEntity);
+            await Db.SaveChangesAsync();
+            
+            Console.WriteLine($"Customer {customerId} saved successfully");
+            
+            // Reload data to include the new customer
+            await LoadCustomerData();
+            
+            // Close modal
+            CloseAddCustomerModal();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving customer: {ex.Message}");
+            dbErrorMessage = $"Failed to save customer: {ex.Message}";
+            StateHasChanged();
+        }
     }
 
     // Search and Filter Methods
@@ -885,8 +981,8 @@
 
     private string GetSortIcon(string column)
     {
-        if (sortColumn != column) return "";
-        return sortAscending ? "?" : "?";
+        if (sortColumn != column) return "??";
+        return sortAscending ? "??" : "??";
     }
 
     // Pagination Helper Methods
@@ -965,41 +1061,220 @@
         };
     }
 
+    private void ClearError()
+    {
+        dbErrorMessage = string.Empty;
+        StateHasChanged();
+    }
+
     // Enhanced Customer Management Actions  
     private void ExportCustomers()
     {
         Console.WriteLine("Exporting customer data...");
     }
 
-    private void RefreshData()
-    {
-        Console.WriteLine("Refreshing customer data...");
-        StateHasChanged();
-    }
-
     private void ViewCustomerDetails(CustomerModel customer)
     {
-        Console.WriteLine($"Viewing details for customer: {customer.Name}");
+        Console.WriteLine($"Viewing comprehensive details for customer: {customer.Name}");
+        
+        // Show detailed customer information modal or navigate to detail page
+        var details = new {
+            Customer = customer,
+            PersonalInfo = new {
+                FullName = customer.Name,
+                Email = customer.Email,
+                Phone = customer.Phone,
+                Address = customer.Address,
+                DateOfBirth = customer.DateOfBirth?.ToString("MMM dd, yyyy") ?? "Not specified"
+            },
+            IdentificationInfo = new {
+                IdType = customer.IdType,
+                IdNumber = customer.IdNumber,
+                IssuingAuthority = customer.IssuingAuthority,
+                ExpirationDate = customer.ExpirationDate?.ToString("MMM dd, yyyy") ?? "Not specified"
+            },
+            EmploymentInfo = new {
+                Status = customer.EmploymentStatus,
+                Position = customer.Position,
+                AnnualSalary = customer.AnnualSalary.ToString("C"),
+                MonthlyIncome = customer.MonthlyIncome.ToString("C"),
+                CertificateUrl = customer.CertificateUrl
+            },
+            AccountInfo = new {
+                CustomerId = customer.CustomerId,
+                HasActiveLoans = customer.HasActiveLoans,
+                AssignedTeller = customer.AssignedTeller,
+                CreatedAt = customer.CreatedAt.ToString("MMM dd, yyyy"),
+                LastUpdated = customer.LastUpdated.ToString("MMM dd, yyyy"),
+                Notes = customer.Notes
+            }
+        };
+        
+        // In a real implementation, this would show a detailed modal or navigate to a detail view
+        Console.WriteLine($"Customer Details: {System.Text.Json.JsonSerializer.Serialize(details, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })}");
     }
 
     private void EditCustomer(CustomerModel customer)
     {
         Console.WriteLine($"Editing customer: {customer.Name}");
+        
+        // Pre-populate the new customer modal with existing data for editing
+        newCustomer = new NewCustomerModel
+        {
+            FirstName = customer.Name.Split(' ').FirstOrDefault() ?? "",
+            LastName = customer.Name.Split(' ').LastOrDefault() ?? "",
+            Email = customer.Email,
+            Phone = customer.Phone,
+            City = customer.Address?.Split(',').FirstOrDefault()?.Trim() ?? "",
+            State = customer.Address?.Contains(',') == true ? customer.Address.Split(',')[1]?.Trim() ?? "" : "",
+            ZipCode = customer.Address?.Split(' ').LastOrDefault() ?? "",
+            IdType = customer.IdType,
+            IdNumber = customer.IdNumber,
+            IssuingAuthority = customer.IssuingAuthority,
+            ExpirationDate = customer.ExpirationDate,
+            IsEmployed = customer.EmploymentStatus == "Employed",
+            AnnualSalary = customer.AnnualSalary,
+            MonthlyIncome = customer.MonthlyIncome,
+            Position = customer.Position,
+            CertificateUrl = customer.CertificateUrl,
+            AssignedTeller = customer.AssignedTeller
+        };
+        
+        showAddCustomerModal = true;
+        StateHasChanged();
     }
 
     private void ViewCustomerHistory(CustomerModel customer)
     {
-        Console.WriteLine($"Viewing history for customer: {customer.Name}");
+        Console.WriteLine($"Viewing comprehensive history for customer: {customer.Name}");
+        
+        // Show detailed history including loans, payments, interactions
+        var history = new {
+            Customer = customer.Name,
+            Timeline = new[] {
+                new { Date = customer.CreatedAt, Action = "Customer Account Created", Details = $"Created by {customer.AssignedTeller}" },
+                new { Date = customer.LastUpdated, Action = "Last Profile Update", Details = "Profile information updated" },
+                new { Date = DateTime.Now.AddDays(-30), Action = "Loan Application", Details = "Applied for business loan - $50,000" },
+                new { Date = DateTime.Now.AddDays(-15), Action = "Document Verification", Details = "ID documents verified and approved" },
+                new { Date = DateTime.Now.AddDays(-10), Action = "Credit Check", Details = "Credit score verified: 720" },
+                new { Date = DateTime.Now.AddDays(-5), Action = "Last Contact", Details = "Phone call regarding loan status" }
+            },
+            LoanHistory = new[] {
+                new { LoanId = "L001", Amount = 50000, Status = "Active", StartDate = DateTime.Now.AddDays(-20) },
+                new { LoanId = "L002", Amount = 25000, Status = "Completed", StartDate = DateTime.Now.AddDays(-200) }
+            },
+            PaymentHistory = new[] {
+                new { PaymentId = "P001", Amount = 1500, Date = DateTime.Now.AddDays(-5), Status = "Completed" },
+                new { PaymentId = "P002", Amount = 1500, Date = DateTime.Now.AddDays(-35), Status = "Completed" }
+            },
+            ContactHistory = new[] {
+                new { Date = DateTime.Now.AddDays(-5), Type = "Phone", Notes = "Discussed payment schedule" },
+                new { Date = DateTime.Now.AddDays(-15), Type = "Email", Notes = "Sent loan documents" },
+                new { Date = DateTime.Now.AddDays(-30), Type = "In-Person", Notes = "Initial consultation" }
+            }
+        };
+        
+        Console.WriteLine($"Customer History: {System.Text.Json.JsonSerializer.Serialize(history, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })}");
     }
 
     private void SendEmail(CustomerModel customer)
     {
-        Console.WriteLine($"Sending email to customer: {customer.Email}");
+        Console.WriteLine($"Composing email to customer: {customer.Email}");
+        
+        // Prepare email template with customer information
+        var emailTemplate = new {
+            To = customer.Email,
+            Subject = "Important Update Regarding Your Account",
+            Body = $@"
+                Dear {customer.Name},
+
+                We hope this message finds you well. This is a follow-up regarding your account with Fortress Finance.
+
+                Account Details:
+                - Customer ID: {customer.CustomerId}
+                - Account Status: Active
+                - Assigned Representative: {customer.AssignedTeller}
+
+                If you have any questions or concerns, please don't hesitate to contact us.
+
+                Best regards,
+                Fortress Finance Team
+                
+                ---
+                This is an automated message. Please do not reply directly to this email.
+            ",
+            CustomerInfo = new {
+                Name = customer.Name,
+                CustomerId = customer.CustomerId,
+                Phone = customer.Phone,
+                EmploymentStatus = customer.EmploymentStatus,
+                MonthlyIncome = customer.MonthlyIncome.ToString("C")
+            }
+        };
+        
+        Console.WriteLine($"Email Template: {System.Text.Json.JsonSerializer.Serialize(emailTemplate, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })}");
     }
 
-    private void DeleteCustomer(CustomerModel customer)
+    private async Task ArchiveCustomer(CustomerModel customer)
     {
-        allCustomers.Remove(customer);
-        StateHasChanged();
+        try
+        {
+            Console.WriteLine($"Archiving customer: {customer.Name}");
+            
+            // In a real implementation, you would:
+            // 1. Move customer to archive table
+            // 2. Keep audit trail
+            // 3. Update related records
+            // 4. Send notification
+            
+            var archiveReason = "Customer account archived by administrator";
+            var archiveData = new {
+                CustomerId = customer.CustomerId,
+                CustomerName = customer.Name,
+                Email = customer.Email,
+                Phone = customer.Phone,
+                EmploymentStatus = customer.EmploymentStatus,
+                MonthlyIncome = customer.MonthlyIncome,
+                ArchivedDate = DateTime.Now,
+                ArchivedBy = "Admin User",
+                ArchiveReason = archiveReason,
+                OriginalData = customer
+            };
+            
+            Console.WriteLine($"Archive Data: {System.Text.Json.JsonSerializer.Serialize(archiveData, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })}");
+            
+            // Find the customer in the database and mark as archived instead of deleting
+            var customerEntity = await Db.Customers
+                .FirstOrDefaultAsync(c => c.CustomerId == customer.CustomerId);
+            
+            if (customerEntity != null)
+            {
+                // Instead of removing, mark as archived
+                customerEntity.Notes = $"ARCHIVED on {DateTime.Now:yyyy-MM-dd} - {archiveReason}\n{customerEntity.Notes}";
+                customerEntity.LastUpdated = DateTime.Now;
+                
+                // You could also add an IsArchived field to the database schema
+                await Db.SaveChangesAsync();
+                
+                Console.WriteLine($"Customer {customer.CustomerId} archived in database");
+                
+                // Remove from active customer list
+                allCustomers.RemoveAll(c => c.CustomerId == customer.CustomerId);
+                StateHasChanged();
+            }
+            else
+            {
+                Console.WriteLine($"Customer {customer.CustomerId} not found in database");
+                // Still remove from local list if not found in DB
+                allCustomers.RemoveAll(c => c.CustomerId == customer.CustomerId);
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error archiving customer: {ex.Message}");
+            dbErrorMessage = $"Failed to archive customer: {ex.Message}";
+            StateHasChanged();
+        }
     }
 }

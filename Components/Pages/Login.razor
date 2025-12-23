@@ -1,6 +1,8 @@
 @page "/login"
 @page "/"
 @layout EmptyLayout
+@using FinanceSystem1.Services
+@inject IAuthenticationService AuthService
 @inject NavigationManager Navigation
 
 <PageTitle>Fortress Finance - Login</PageTitle>
@@ -51,6 +53,13 @@
                     <span>24/7 Support</span>
                 </div>
             </div>
+
+            <!-- Demo Credentials Info -->
+            <div class="demo-info">
+                <h4>Demo Credentials:</h4>
+                <p><strong>Username:</strong> admin</p>
+                <p><strong>Password:</strong> admin</p>
+            </div>
         </div>
     </div>
     
@@ -75,14 +84,14 @@
                 <div class="form-group">
                     <input 
                         type="text" 
-                        class="form-input @(emailError ? "error" : "")" 
-                        placeholder="Email address or username"
-                        @bind="loginModel.Email"
-                        @oninput="ClearEmailError"
+                        class="form-input @(usernameError ? "error" : "")" 
+                        placeholder="Username"
+                        @bind="loginModel.Username"
+                        @oninput="ClearUsernameError"
                         required />
-                    @if (emailError)
+                    @if (usernameError)
                     {
-                        <div class="error-message">Email is required</div>
+                        <div class="error-message">Username is required</div>
                     }
                 </div>
                 
@@ -103,7 +112,7 @@
                 @if (loginError)
                 {
                     <div class="login-error">
-                        Invalid email or password. Please try again.
+                        @errorMessage
                     </div>
                 }
                 
@@ -128,22 +137,56 @@
     </div>
 </div>
 
+<style>
+    .demo-info {
+        margin-top: 30px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .demo-info h4 {
+        margin: 0 0 12px 0;
+        color: white;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .demo-info p {
+        margin: 6px 0;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 14px;
+        font-family: 'Courier New', monospace;
+    }
+</style>
+
 @code {
     public class LoginModel
     {
-        public string Email { get; set; } = "";
+        public string Username { get; set; } = "";
         public string Password { get; set; } = "";
     }
 
     private LoginModel loginModel = new();
     private bool isLoading = false;
-    private bool emailError = false;
+    private bool usernameError = false;
     private bool passwordError = false;
     private bool loginError = false;
+    private string errorMessage = "";
 
-    private void ClearEmailError()
+    protected override async Task OnInitializedAsync()
     {
-        emailError = false;
+        // Check if already logged in
+        if (await AuthService.IsLoggedInAsync())
+        {
+            Navigation.NavigateTo("/dashboard");
+        }
+    }
+
+    private void ClearUsernameError()
+    {
+        usernameError = false;
         loginError = false;
     }
 
@@ -156,14 +199,15 @@
     private async Task HandleLogin()
     {
         // Reset errors
-        emailError = false;
+        usernameError = false;
         passwordError = false;
         loginError = false;
+        errorMessage = "";
 
         // Validate form
-        if (string.IsNullOrWhiteSpace(loginModel.Email))
+        if (string.IsNullOrWhiteSpace(loginModel.Username))
         {
-            emailError = true;
+            usernameError = true;
             return;
         }
 
@@ -178,57 +222,28 @@
 
         try
         {
-            // Simulate authentication delay
-            await Task.Delay(1500);
-
-            // Simple authentication check (you can replace with real authentication)
-            if (IsValidCredentials(loginModel.Email, loginModel.Password))
+            var success = await AuthService.LoginAsync(loginModel.Username, loginModel.Password);
+            
+            if (success)
             {
-                // Store authentication state (simplified)
-                await StoreAuthenticationState();
-                
-                // Navigate to dashboard/landing page
+                // Navigate to dashboard
                 Navigation.NavigateTo("/dashboard", replace: true);
             }
             else
             {
                 loginError = true;
-                isLoading = false;
+                errorMessage = "Invalid username or password. Please try again.";
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             loginError = true;
-            isLoading = false;
+            errorMessage = $"Login failed: {ex.Message}";
         }
-    }
-
-    private bool IsValidCredentials(string email, string password)
-    {
-        // Simple authentication - replace with your actual authentication logic
-        var validCredentials = new Dictionary<string, string>
+        finally
         {
-            { "admin", "admin" },
-            { "admin@fortress.com", "admin123" },
-            { "user", "user123" },
-            { "demo", "demo" },
-            { "test", "test123" }
-        };
-
-        return validCredentials.ContainsKey(email.ToLower()) && 
-               validCredentials[email.ToLower()] == password;
-    }
-
-    private async Task StoreAuthenticationState()
-    {
-        // Simple authentication state storage
-        // In a real app, you'd use proper authentication services
-        await Task.CompletedTask;
-    }
-
-    protected override void OnInitialized()
-    {
-        // Check if already authenticated and redirect to dashboard
-        // This is where you'd check your authentication state
+            isLoading = false;
+            StateHasChanged();
+        }
     }
 }

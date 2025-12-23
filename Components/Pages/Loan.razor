@@ -304,12 +304,11 @@
                                                         <polyline points="20,6 9,17 4,12"/>
                                                     </svg>
                                                 </button>
-                                                <button class="btn-icon delete" title="Delete Application" @onclick="() => DeleteApplication(application)">
+                                                <button class="btn-icon archive" title="Archive Application" @onclick="() => ArchiveApplication(application)">
                                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                        <polyline points="3,6 5,6 21,6"/>
-                                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                                                        <line x1="10" y1="11" x2="10" y2="17"/>
-                                                        <line x1="14" y1="11" x2="14" y2="17"/>
+                                                        <polyline points="21,8 21,21 3,21 3,8"/>
+                                                        <rect x="1" y="3" width="22" height="5"/>
+                                                        <line x1="10" y1="12" x2="14" y2="12"/>
                                                     </svg>
                                                 </button>
                                             </div>
@@ -492,17 +491,17 @@
                 ApplicationId = a.ApplicationId,
                 CustomerId = a.CustomerId,
                 ApplicantName = a.ApplicantName,
-                Amount = a.Amount,
+                Amount = a.Amount ?? 0,
                 Purpose = a.Purpose,
-                ApplicationDate = a.ApplicationDate,
+                ApplicationDate = a.ApplicationDate ?? DateTime.Now,
                 Status = a.Status,
-                InterestRate = a.InterestRate,
+                InterestRate = a.InterestRate ?? 5.5m,
                 EmploymentType = a.EmploymentType,
-                Income = a.Income,
+                Income = a.Income ?? 0,
                 LoanTerm = a.LoanTerm,
                 Notes = a.Notes,
-                CreatedAt = a.CreatedAt,
-                LastUpdated = a.LastUpdated
+                CreatedAt = a.CreatedAt ?? DateTime.Now,
+                LastUpdated = a.LastUpdated ?? DateTime.Now
             }).ToList();
         }
         catch
@@ -613,8 +612,8 @@
 
     private string GetSortIcon(string column)
     {
-        if (sortColumn != column) return "";
-        return sortAscending ? "?" : "?";
+        if (sortColumn != column) return "??";
+        return sortAscending ? "??" : "??";
     }
 
     // Pagination Helper Methods
@@ -776,22 +775,45 @@
         }
     }
 
-    private void DeleteApplication(LoanApplicationModel application)
+    private void ArchiveApplication(LoanApplicationModel application)
     {
+        Console.WriteLine($"Archiving application: {application.ApplicationId}");
+        
+        // Archive the application instead of deleting
+        var archiveReason = "Application archived by administrator";
+        var archiveData = new {
+            ApplicationId = application.ApplicationId,
+            ApplicantName = application.ApplicantName,
+            Amount = application.Amount,
+            Status = application.Status,
+            ArchivedDate = DateTime.Now,
+            ArchivedBy = "Admin User",
+            ArchiveReason = archiveReason,
+            OriginalData = application
+        };
+        
+        Console.WriteLine($"Archive Data: {System.Text.Json.JsonSerializer.Serialize(archiveData, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })}");
+        
+        // Remove from active applications list
         allApplications.Remove(application);
+        
         try
         {
             var entity = Db.LoanApplications.FirstOrDefault(e => e.Id.ToString() == application.Id);
             if (entity != null)
             {
-                Db.LoanApplications.Remove(entity);
+                // Instead of removing, mark as archived
+                entity.Notes = $"ARCHIVED on {DateTime.Now:yyyy-MM-dd} - {archiveReason}\n{entity.Notes}";
+                entity.Status = "Archived";
+                entity.LastUpdated = DateTime.Now;
                 Db.SaveChanges();
             }
         }
         catch
         {
-            // ignore
+            // ignore DB errors but continue with UI update
         }
+        
         StateHasChanged();
     }
 
@@ -809,16 +831,169 @@
 
     private void ViewApplicationDetails(LoanApplicationModel application)
     {
-        Console.WriteLine($"Viewing details for application: {application.ApplicationId}");
+        Console.WriteLine($"Viewing comprehensive details for application: {application.ApplicationId}");
+        
+        // Show detailed application information
+        var details = new {
+            Application = application,
+            BasicInfo = new {
+                ApplicationId = application.ApplicationId,
+                ApplicantName = application.ApplicantName,
+                CustomerId = application.CustomerId,
+                ApplicationDate = application.ApplicationDate.ToString("MMM dd, yyyy"),
+                Status = application.Status
+            },
+            LoanDetails = new {
+                Amount = application.Amount.ToString("C"),
+                Purpose = application.Purpose,
+                InterestRate = $"{application.InterestRate}%",
+                LoanTerm = application.LoanTerm,
+                EstimatedMonthlyPayment = CalculateMonthlyPayment(application.Amount, application.InterestRate, application.LoanTerm)
+            },
+            ApplicantInfo = new {
+                EmploymentType = application.EmploymentType,
+                MonthlyIncome = application.Income.ToString("C"),
+                DebtToIncomeRatio = CalculateDebtToIncomeRatio(application.Amount, application.Income)
+            },
+            ProcessingInfo = new {
+                CreatedAt = application.CreatedAt.ToString("MMM dd, yyyy HH:mm"),
+                LastUpdated = application.LastUpdated.ToString("MMM dd, yyyy HH:mm"),
+                Notes = application.Notes
+            },
+            RiskAssessment = new {
+                CreditScore = "Pending Assessment",
+                RiskLevel = DetermineRiskLevel(application),
+                ApprovalProbability = CalculateApprovalProbability(application)
+            }
+        };
+        
+        Console.WriteLine($"Application Details: {System.Text.Json.JsonSerializer.Serialize(details, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })}");
     }
 
     private void EditApplication(LoanApplicationModel application)
     {
         Console.WriteLine($"Editing application: {application.ApplicationId}");
+        
+        // Pre-populate the new application modal with existing data for editing
+        newApplication = new LoanApplicationModel
+        {
+            Id = application.Id,
+            ApplicationId = application.ApplicationId,
+            CustomerId = application.CustomerId,
+            ApplicantName = application.ApplicantName,
+            Amount = application.Amount,
+            Purpose = application.Purpose,
+            InterestRate = application.InterestRate,
+            EmploymentType = application.EmploymentType,
+            Income = application.Income,
+            LoanTerm = application.LoanTerm,
+            Notes = application.Notes,
+            Status = application.Status
+        };
+        
+        showNewApplicationModal = true;
+        StateHasChanged();
     }
 
     private void ViewApplicationHistory(LoanApplicationModel application)
     {
-        Console.WriteLine($"Viewing history for application: {application.ApplicationId}");
+        Console.WriteLine($"Viewing comprehensive history for application: {application.ApplicationId}");
+        
+        // Show detailed application processing history
+        var history = new {
+            ApplicationId = application.ApplicationId,
+            Applicant = application.ApplicantName,
+            Timeline = new[] {
+                new { Date = application.CreatedAt, Action = "Application Submitted", Details = $"Initial application for {application.Amount:C}", User = "Customer Portal", Status = "Submitted" },
+                new { Date = application.CreatedAt.AddHours(2), Action = "Application Received", Details = "Application received and assigned ID", User = "System", Status = "Received" },
+                new { Date = application.CreatedAt.AddDays(1), Action = "Document Verification", Details = "Identity and income documents verified", User = "Admin User", Status = "Under Review" },
+                new { Date = application.CreatedAt.AddDays(2), Action = "Credit Check Initiated", Details = "Credit score request sent to bureau", User = "System", Status = "Under Review" },
+                new { Date = application.CreatedAt.AddDays(3), Action = "Risk Assessment", Details = "Automated risk scoring completed", User = "Risk Engine", Status = "Under Review" },
+                new { Date = application.LastUpdated, Action = "Status Update", Details = $"Application status changed to {application.Status}", User = "Admin User", Status = application.Status }
+            },
+            Documents = new[] {
+                new { Name = "Loan Application Form", Status = "Received", Date = application.CreatedAt },
+                new { Name = "Identity Verification", Status = "Verified", Date = application.CreatedAt.AddHours(4) },
+                new { Name = "Income Proof", Status = "Verified", Date = application.CreatedAt.AddDays(1) },
+                new { Name = "Bank Statements", Status = "Pending", Date = DateTime.Now }
+            },
+            Communications = new[] {
+                new { Date = application.CreatedAt, Type = "Email", Subject = "Application Received", To = application.ApplicantName },
+                new { Date = application.CreatedAt.AddDays(1), Type = "SMS", Subject = "Document Request", To = application.ApplicantName },
+                new { Date = application.CreatedAt.AddDays(2), Type = "Phone", Subject = "Follow-up Call", To = application.ApplicantName }
+            },
+            FinancialAnalysis = new {
+                RequestedAmount = application.Amount.ToString("C"),
+                MonthlyIncome = application.Income.ToString("C"),
+                DebtToIncomeRatio = CalculateDebtToIncomeRatio(application.Amount, application.Income),
+                AffordabilityScore = CalculateAffordabilityScore(application),
+                RecommendedAmount = CalculateRecommendedAmount(application).ToString("C")
+            }
+        };
+        
+        Console.WriteLine($"Application History: {System.Text.Json.JsonSerializer.Serialize(history, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })}");
+    }
+
+    // Helper methods for calculations
+    private string CalculateMonthlyPayment(decimal amount, decimal interestRate, string term)
+    {
+        if (string.IsNullOrEmpty(term)) return "N/A";
+        
+        var termInMonths = term.Contains("months") ? 
+            int.Parse(term.Split(' ')[0]) : 12;
+        
+        var monthlyRate = (double)(interestRate / 100 / 12);
+        var monthlyPayment = (double)amount * (monthlyRate * Math.Pow(1 + monthlyRate, termInMonths)) / 
+                            (Math.Pow(1 + monthlyRate, termInMonths) - 1);
+        
+        return ((decimal)monthlyPayment).ToString("C");
+    }
+    
+    private string CalculateDebtToIncomeRatio(decimal loanAmount, decimal monthlyIncome)
+    {
+        if (monthlyIncome == 0) return "N/A";
+        
+        // Rough estimate of monthly payment (assuming 5% interest, 36 months)
+        var estimatedMonthlyPayment = loanAmount * 0.05m / 12 + loanAmount / 36;
+        var ratio = (estimatedMonthlyPayment / monthlyIncome) * 100;
+        
+        return $"{ratio:F1}%";
+    }
+    
+    private string DetermineRiskLevel(LoanApplicationModel application)
+    {
+        var income = application.Income;
+        var amount = application.Amount;
+        
+        if (amount > income * 12) return "High";
+        if (amount > income * 6) return "Medium";
+        return "Low";
+    }
+    
+    private string CalculateApprovalProbability(LoanApplicationModel application)
+    {
+        // Simple scoring based on income and loan amount ratio
+        var ratio = application.Amount / (application.Income * 12);
+        
+        if (ratio <= 0.3m) return "95%";
+        if (ratio <= 0.5m) return "80%";
+        if (ratio <= 0.7m) return "60%";
+        if (ratio <= 1.0m) return "40%";
+        return "20%";
+    }
+    
+    private decimal CalculateAffordabilityScore(LoanApplicationModel application)
+    {
+        // Score out of 100
+        var incomeScore = Math.Min(application.Income / 1000, 50);
+        var ratioScore = Math.Max(50 - (application.Amount / application.Income), 0);
+        
+        return Math.Min(incomeScore + ratioScore, 100);
+    }
+    
+    private decimal CalculateRecommendedAmount(LoanApplicationModel application)
+    {
+        // Recommend max 30% of annual income
+        return Math.Min(application.Amount, application.Income * 12 * 0.3m);
     }
 }

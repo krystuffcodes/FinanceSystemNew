@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using FinanceSystem1.Data;
+using FinanceSystem1.Services;
 
 namespace FinanceSystem1
 {
@@ -19,19 +20,16 @@ namespace FinanceSystem1
             builder.Services.AddMauiBlazorWebView();
 
             // Configure EF Core SQL Server DbContext
-            // Local connection (developer):
-            var localConn = "Data Source=U8813V195;Initial Catalog=fn_crm;Integrated Security=True;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;Application Intent=ReadWrite;Multi Subnet Failover=False;Command Timeout=30";
-            // Online connection (production):
-            var onlineConn = "Server=db32949.public.databaseasp.net; Database=db32949; User Id=db32949; Password=A!a76L_gs-4D; Encrypt=True; TrustServerCertificate=True; MultipleActiveResultSets=True;";
-
-            // Choose connection string based on environment variable or default to local
-            var useOnline = Environment.GetEnvironmentVariable("USE_ONLINE_DB");
-            var connectionString = !string.IsNullOrEmpty(useOnline) && useOnline == "1" ? onlineConn : localConn;
+            // Updated to use correct computer name with 'I' at the end
+            var connectionString = "Server=LAPTOP-9U7RNK0I\\SQLEXPRESS;Database=fn_crm;Trusted_Connection=true;MultipleActiveResultSets=true;TrustServerCertificate=true;";
 
             builder.Services.AddDbContext<AppDbContext>(options =>
             {
                 options.UseSqlServer(connectionString);
             });
+
+            // Register authentication service
+            builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
 #if DEBUG
 			builder.Services.AddBlazorWebViewDeveloperTools();

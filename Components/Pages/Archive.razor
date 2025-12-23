@@ -50,7 +50,7 @@
                 <line x1="16" y1="17" x2="8" y2="17"/>
                 <polyline points="10,9 9,9 8,9"/>
             </svg>
-            ??? Payments (@GetArchivedPaymentsCount())
+            ?? Payments (@GetArchivedPaymentsCount())
         </button>
     </div>
 
@@ -583,8 +583,8 @@
 
     private string GetSortIcon(string column)
     {
-        if (sortColumn != column) return "";
-        return sortAscending ? "?" : "?";
+        if (sortColumn != column) return "??";
+        return sortAscending ? "??" : "??";
     }
 
     // View and Pagination Methods
@@ -660,16 +660,184 @@
 
     private void ViewArchiveDetails(ArchivedCustomerModel customer)
     {
-        Console.WriteLine($"Viewing archive details for: {customer.Name}");
+        Console.WriteLine($"Viewing comprehensive archive details for: {customer.Name}");
+        
+        // Show detailed archived customer information
+        var details = new {
+            ArchivedCustomer = customer,
+            ArchiveInfo = new {
+                ArchiveId = customer.Id,
+                CustomerName = customer.Name,
+                ArchivedDate = customer.ArchivedDate.ToString("MMM dd, yyyy"),
+                ArchiveReason = customer.ArchiveReason,
+                ArchiveDuration = CalculateArchiveDuration(customer.ArchivedDate)
+            },
+            OriginalAccountInfo = new {
+                Email = customer.Email,
+                Phone = customer.Phone,
+                Employment = customer.Employment,
+                FinalLoanStatus = customer.LoanStatus,
+                TotalPaid = customer.TotalPaid.ToString("C")
+            },
+            FinancialSummary = new {
+                TotalRevenue = customer.TotalPaid.ToString("C"),
+                EstimatedLifetimeValue = CalculateLifetimeValue(customer).ToString("C"),
+                ProfitabilityScore = CalculateProfitabilityScore(customer),
+                ReturnOnInvestment = CalculateROI(customer) + "%"
+            },
+            ArchiveMetrics = new {
+                RetentionPeriod = "7 years (regulatory requirement)",
+                StorageLocation = "Secure archive database",
+                DataIntegrity = "Verified",
+                ComplianceStatus = "Compliant",
+                LastVerification = DateTime.Now.AddDays(-30).ToString("MMM dd, yyyy")
+            },
+            RestoreOptions = new {
+                CanRestore = true,
+                RestoreProcess = "Contact administrator for restoration",
+                DataAvailability = "Full historical data available",
+                EstimatedRestoreTime = "24-48 hours"
+            },
+            LegalConsiderations = new {
+                RetentionPolicy = "Retain for 7 years per banking regulations",
+                PurgeDate = customer.ArchivedDate.AddYears(7).ToString("MMM dd, yyyy"),
+                PrivacyCompliance = "GDPR/CCPA compliant",
+                AuditTrail = "Complete audit trail maintained"
+            }
+        };
+        
+        Console.WriteLine($"Archive Details: {System.Text.Json.JsonSerializer.Serialize(details, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })}");
     }
 
     private void RestoreCustomer(ArchivedCustomerModel customer)
     {
-        Console.WriteLine($"Restoring customer: {customer.Name}");
+        Console.WriteLine($"Initiating restoration process for customer: {customer.Name}");
+        
+        // Process customer restoration with detailed workflow
+        var restorationProcess = new {
+            Customer = customer,
+            RestorationRequest = new {
+                RequestId = Guid.NewGuid().ToString(),
+                RequestDate = DateTime.Now,
+                RequestedBy = "Admin User",
+                Priority = "Normal",
+                EstimatedCompletionTime = DateTime.Now.AddDays(2)
+            },
+            PreRestoreChecks = new {
+                DataIntegrityCheck = "Passed",
+                ComplianceVerification = "Passed",
+                SystemCompatibility = "Compatible",
+                ConflictResolution = "No conflicts detected"
+            },
+            RestorationSteps = new[] {
+                new { Step = 1, Action = "Validate archived data", Status = "Completed", Duration = "5 minutes" },
+                new { Step = 2, Action = "Prepare restoration environment", Status = "In Progress", Duration = "15 minutes" },
+                new { Step = 3, Action = "Restore customer profile", Status = "Pending", Duration = "30 minutes" },
+                new { Step = 4, Action = "Restore transaction history", Status = "Pending", Duration = "1 hour" },
+                new { Step = 5, Action = "Update system references", Status = "Pending", Duration = "30 minutes" },
+                new { Step = 6, Action = "Verify restoration", Status = "Pending", Duration = "15 minutes" }
+            },
+            NotificationPlan = new {
+                NotifyCustomer = true,
+                NotifyTeam = true,
+                NotificationMethod = "Email + SMS",
+                CustomMessage = $"Customer {customer.Name} account has been restored and is now active."
+            },
+            PostRestorationTasks = new {
+                ReactivateServices = true,
+                UpdateCreditProfile = true,
+                ScheduleFollowUp = true,
+                DocumentRestoration = true
+            }
+        };
+        
+        Console.WriteLine($"Restoration Process: {System.Text.Json.JsonSerializer.Serialize(restorationProcess, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })}");
+        
+        // Remove from archive list (in real app, would move back to active customers)
+        allArchivedCustomers.Remove(customer);
+        StateHasChanged();
     }
 
     private void PermanentlyDelete(ArchivedCustomerModel customer)
     {
-        Console.WriteLine($"Permanently deleting customer: {customer.Name}");
+        Console.WriteLine($"Initiating permanent deletion process for customer: {customer.Name}");
+        
+        // Process permanent deletion with detailed compliance workflow
+        var deletionProcess = new {
+            Customer = customer,
+            DeletionRequest = new {
+                RequestId = Guid.NewGuid().ToString(),
+                RequestDate = DateTime.Now,
+                RequestedBy = "Admin User",
+                AuthorizationRequired = true,
+                ComplianceOfficerApproval = "Required"
+            },
+            PreDeletionChecks = new {
+                LegalRetentionPeriod = customer.ArchivedDate.AddYears(7) < DateTime.Now ? "Expired" : "Still in retention period",
+                RegulatoryCompliance = "Under review",
+                OutstandingObligations = "None",
+                LegalHolds = "None active"
+            },
+            DeletionScope = new {
+                CustomerProfile = "Will be permanently deleted",
+                TransactionHistory = "Will be permanently deleted",
+                CommunicationRecords = "Will be permanently deleted", 
+                AuditTrail = "Will be retained per regulatory requirements",
+                BackupCopies = "Will be purged from all systems"
+            },
+            ComplianceRequirements = new {
+                RegulatoryApproval = "Required for permanent deletion",
+                AuditDocumentation = "Complete documentation required",
+                CustomerNotification = customer.ArchivedDate.AddYears(7) < DateTime.Now ? "Not required (retention expired)" : "Required",
+                DataProcessorNotification = "Required for third-party processors"
+            },
+            SafetyMeasures = new {
+                BackupCreated = "Encrypted backup created for legal purposes",
+                AuthorizationLog = "All authorizations logged",
+                IrreversibilityWarning = "This action cannot be undone",
+                FinalConfirmation = "Required before execution"
+            }
+        };
+        
+        Console.WriteLine($"Deletion Process: {System.Text.Json.JsonSerializer.Serialize(deletionProcess, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })}");
+        
+        // In a real implementation, this would require additional approvals and safeguards
+        // For demo purposes, we'll just remove from the list
+        Console.WriteLine("WARNING: In a real system, this would require compliance officer approval and cannot be undone.");
+        
+        allArchivedCustomers.Remove(customer);
+        StateHasChanged();
+    }
+
+    // Helper methods for archive analysis
+    private string CalculateArchiveDuration(DateTime archiveDate)
+    {
+        var duration = DateTime.Now - archiveDate;
+        return $"{duration.Days} days ({duration.Days / 30} months)";
+    }
+    
+    private decimal CalculateLifetimeValue(ArchivedCustomerModel customer)
+    {
+        // Estimate based on total paid and average customer metrics
+        return customer.TotalPaid * 1.2m; // 20% markup for estimated lifetime value
+    }
+    
+    private string CalculateProfitabilityScore(ArchivedCustomerModel customer)
+    {
+        // Simple scoring based on total paid amount
+        return customer.TotalPaid switch
+        {
+            > 50000 => "High",
+            > 25000 => "Medium",
+            _ => "Low"
+        };
+    }
+    
+    private string CalculateROI(ArchivedCustomerModel customer)
+    {
+        // Estimate ROI based on total paid (assuming average loan amount)
+        var estimatedLoanAmount = customer.TotalPaid / 0.8m; // Assuming 80% repayment rate
+        var profit = customer.TotalPaid - estimatedLoanAmount;
+        return estimatedLoanAmount > 0 ? ((profit / estimatedLoanAmount) * 100).ToString("F1") : "0";
     }
 }

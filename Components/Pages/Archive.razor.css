@@ -543,8 +543,13 @@
     color: #721c24;
 }
 
-.btn-icon:hover svg {
-    stroke: currentColor;
+.btn-icon.archive:hover {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.btn-icon.archive:hover svg {
+    stroke: #856404;
 }
 
 /* Pagination */

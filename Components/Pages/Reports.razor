@@ -103,8 +103,8 @@
     <!-- Key Metrics Summary -->
     <div class="key-metrics-summary">
         <div class="metric-highlight">
-            <strong>Loan Tenure ? Default Rate</strong>
-            <span class="metric-value positive">? 0.65</span>
+            <strong>Loan Tenure ?? Default Rate</strong>
+            <span class="metric-value positive">?? 0.65</span>
             <span class="metric-description">Moderate Positive - Variables tend to move together</span>
             <span class="strength-indicator">Strong</span>
         </div>
@@ -444,8 +444,8 @@
 
     private string GetSortIcon(string column)
     {
-        if (sortColumn != column) return "";
-        return sortAscending ? "?" : "?";
+        if (sortColumn != column) return "??";
+        return sortAscending ? "??" : "??";
     }
 
     private void SetViewMode(string mode)
