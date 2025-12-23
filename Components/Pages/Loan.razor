@@ -1,5 +1,7 @@
 @page "/loan"
 @using System.ComponentModel.DataAnnotations
+@using Microsoft.EntityFrameworkCore
+@inject FinanceSystem1.Data.AppDbContext Db
 
 <PageTitle>Loan Applications - Fortress Finance</PageTitle>
 
@@ -481,83 +483,36 @@
     private async Task LoadSampleData()
     {
         isLoading = true;
-        
-        // Enhanced sample loan application data
-        allApplications = new List<LoanApplicationModel>
+        try
         {
-            new LoanApplicationModel 
-            { 
-                ApplicationId = "11",
-                CustomerId = "CUST-2024-001",
-                ApplicantName = "Roberto Cruz", 
-                Amount = 94486.97m,
-                Purpose = "Emergency Fund",
-                ApplicationDate = new DateTime(2025, 12, 17),
-                Status = "Rejected",
-                InterestRate = 10.28m,
-                EmploymentType = "Full-time",
-                Income = 32500.00m,
-                LoanTerm = "24 months"
-            },
-            new LoanApplicationModel 
-            { 
-                ApplicationId = "12",
-                CustomerId = "CUST-2024-002",
-                ApplicantName = "Hector Gomez", 
-                Amount = 222951.81m,
-                Purpose = "Emergency Fund",
-                ApplicationDate = new DateTime(2025, 12, 16),
-                Status = "Pending",
-                InterestRate = 12.09m,
-                EmploymentType = "Full-time",
-                Income = 37500.00m,
-                LoanTerm = "36 months"
-            },
-            new LoanApplicationModel 
-            { 
-                ApplicationId = "20",
-                CustomerId = "CUST-2024-003",
-                ApplicantName = "Luna Diaz", 
-                Amount = 307290.83m,
-                Purpose = "Home Improvement",
-                ApplicationDate = new DateTime(2025, 12, 12),
-                Status = "Pending",
-                InterestRate = 11.22m,
-                EmploymentType = "Full-time",
-                Income = 27500.00m,
-                LoanTerm = "48 months"
-            },
-            new LoanApplicationModel 
-            { 
-                ApplicationId = "5",
-                CustomerId = "CUST-2024-004",
-                ApplicantName = "Andres Bonifacio", 
-                Amount = 109650.99m,
-                Purpose = "Business Expansion",
-                ApplicationDate = new DateTime(2025, 12, 11),
-                Status = "Approved",
-                InterestRate = 13.43m,
-                EmploymentType = "Full-time",
-                Income = 60000.00m,
-                LoanTerm = "60 months"
-            },
-            new LoanApplicationModel 
-            { 
-                ApplicationId = "3",
-                CustomerId = "CUST-2024-005",
-                ApplicantName = "Gabriel Ramos", 
-                Amount = 60426.49m,
-                Purpose = "Business Expansion",
-                ApplicationDate = new DateTime(2025, 12, 10),
-                Status = "Pending",
-                InterestRate = 8.36m,
-                EmploymentType = "Full-time",
-                Income = 42500.00m,
-                LoanTerm = "36 months"
-            }
-        };
-        
-        isLoading = false;
+            var apps = await Db.LoanApplications.AsNoTracking().ToListAsync();
+            allApplications = apps.Select(a => new LoanApplicationModel
+            {
+                Id = a.Id.ToString(),
+                ApplicationId = a.ApplicationId,
+                CustomerId = a.CustomerId,
+                ApplicantName = a.ApplicantName,
+                Amount = a.Amount,
+                Purpose = a.Purpose,
+                ApplicationDate = a.ApplicationDate,
+                Status = a.Status,
+                InterestRate = a.InterestRate,
+                EmploymentType = a.EmploymentType,
+                Income = a.Income,
+                LoanTerm = a.LoanTerm,
+                Notes = a.Notes,
+                CreatedAt = a.CreatedAt,
+                LastUpdated = a.LastUpdated
+            }).ToList();
+        }
+        catch
+        {
+            allApplications = new List<LoanApplicationModel>();
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     // Search and Filter Methods
@@ -763,9 +718,80 @@
         newApplication.CustomerId = $"CUST-2024-{allApplications.Count + 1:D3}";
         
         allApplications.Add(newApplication);
+
+        // Persist to DB
+        try
+        {
+            var entity = new FinanceSystem1.Data.LoanApplication
+            {
+                Id = Guid.Parse(newApplication.Id),
+                ApplicationId = newApplication.ApplicationId,
+                CustomerId = newApplication.CustomerId,
+                ApplicantName = newApplication.ApplicantName,
+                Amount = newApplication.Amount,
+                Purpose = newApplication.Purpose,
+                ApplicationDate = newApplication.ApplicationDate,
+                Status = newApplication.Status,
+                InterestRate = newApplication.InterestRate,
+                EmploymentType = newApplication.EmploymentType,
+                Income = newApplication.Income,
+                LoanTerm = newApplication.LoanTerm,
+                Notes = newApplication.Notes,
+                CreatedAt = newApplication.CreatedAt,
+                LastUpdated = newApplication.LastUpdated
+            };
+            Db.LoanApplications.Add(entity);
+            await Db.SaveChangesAsync();
+        }
+        catch
+        {
+            // ignore DB errors
+        }
+
         CloseNewApplicationModal();
-        
-        await Task.CompletedTask;
+        StateHasChanged();
+    }
+
+    private void ApproveApplication(LoanApplicationModel application)
+    {
+        application.Status = "Approved";
+        application.LastUpdated = DateTime.Now;
+        StateHasChanged();
+        Console.WriteLine($"Application {application.ApplicationId} approved");
+
+        // Update DB
+        try
+        {
+            var entity = Db.LoanApplications.FirstOrDefault(e => e.Id.ToString() == application.Id);
+            if (entity != null)
+            {
+                entity.Status = "Approved";
+                entity.LastUpdated = DateTime.Now;
+                Db.SaveChanges();
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+
+    private void DeleteApplication(LoanApplicationModel application)
+    {
+        allApplications.Remove(application);
+        try
+        {
+            var entity = Db.LoanApplications.FirstOrDefault(e => e.Id.ToString() == application.Id);
+            if (entity != null)
+            {
+                Db.LoanApplications.Remove(entity);
+                Db.SaveChanges();
+            }
+        }
+        catch
+        {
+            // ignore
+        }
         StateHasChanged();
     }
 
@@ -794,19 +820,5 @@
     private void ViewApplicationHistory(LoanApplicationModel application)
     {
         Console.WriteLine($"Viewing history for application: {application.ApplicationId}");
-    }
-
-    private void ApproveApplication(LoanApplicationModel application)
-    {
-        application.Status = "Approved";
-        application.LastUpdated = DateTime.Now;
-        StateHasChanged();
-        Console.WriteLine($"Application {application.ApplicationId} approved");
-    }
-
-    private void DeleteApplication(LoanApplicationModel application)
-    {
-        allApplications.Remove(application);
-        StateHasChanged();
     }
 }

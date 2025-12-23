@@ -1,5 +1,7 @@
 @page "/customer"
 @using System.ComponentModel.DataAnnotations
+@using Microsoft.EntityFrameworkCore
+@inject FinanceSystem1.Data.AppDbContext Db
 
 <PageTitle>Customer Management - Fortress Finance</PageTitle>
 
@@ -23,6 +25,13 @@
             </div>
         </div>
     </div>
+
+    @if (!string.IsNullOrEmpty(dbErrorMessage))
+    {
+        <div class="db-error-banner" style="background:#ffe6e6;border:1px solid #ffb3b3;padding:8px;margin:12px 0;border-radius:4px;color:#900;">
+            <strong>Database error:</strong> @dbErrorMessage
+        </div>
+    }
 
     <!-- Enhanced Search and Filters Section -->
     <div class="customer-controls">
@@ -652,6 +661,8 @@
     private string sortColumn = "Name";
     private bool sortAscending = true;
 
+    private string dbErrorMessage = string.Empty;
+
     protected override async Task OnInitializedAsync()
     {
         await LoadSampleData();
@@ -660,157 +671,68 @@
     private async Task LoadSampleData()
     {
         isLoading = true;
-        
-        // Enhanced sample customer data
-        allCustomers = new List<CustomerModel>
+        dbErrorMessage = string.Empty;
+        try
         {
-            new CustomerModel 
-            { 
-                CustomerId = "CUST-2024-001",
-                Name = "John Smith", 
-                Email = "john.smith@email.com", 
-                Phone = "+1 (555) 123-4567",
-                Address = "123 Main St, New York, NY 10001",
-                EmploymentStatus = "Employed", 
-                MonthlyIncome = 5000,
-                HasActiveLoans = true,
-                DateOfBirth = new DateTime(1985, 5, 15),
-                Notes = "VIP customer, excellent payment history",
-                IdType = "Driver's License",
-                IdNumber = "DL123456789",
-                AnnualSalary = 60000,
-                Position = "Software Engineer",
-                AssignedTeller = "Admin User"
-            },
-            new CustomerModel 
-            { 
-                CustomerId = "CUST-2024-002",
-                Name = "Jane Johnson", 
-                Email = "jane.johnson@email.com", 
-                Phone = "+1 (555) 234-5678",
-                Address = "456 Oak Ave, Los Angeles, CA 90210",
-                EmploymentStatus = "Self-Employed", 
-                MonthlyIncome = 3500,
-                HasActiveLoans = false,
-                DateOfBirth = new DateTime(1990, 8, 22),
-                Notes = "Self-employed business owner",
-                IdType = "State ID",
-                IdNumber = "SI987654321",
-                AnnualSalary = 42000,
-                Position = "Business Owner",
-                AssignedTeller = "Teller 1"
-            },
-            new CustomerModel 
-            { 
-                CustomerId = "CUST-2024-003",
-                Name = "Michael Brown", 
-                Email = "michael.brown@email.com", 
-                Phone = "+1 (555) 345-6789",
-                Address = "789 Pine St, Chicago, IL 60601",
-                EmploymentStatus = "Employed", 
-                MonthlyIncome = 4200,
-                HasActiveLoans = true,
-                DateOfBirth = new DateTime(1982, 12, 10),
-                Notes = "Regular customer, auto loan",
-                IdType = "Driver's License",
-                IdNumber = "DL555666777",
-                AnnualSalary = 50400,
-                Position = "Manager",
-                AssignedTeller = "Teller 2"
-            },
-            new CustomerModel 
-            { 
-                CustomerId = "CUST-2024-004",
-                Name = "Sarah Davis", 
-                Email = "sarah.davis@email.com", 
-                Phone = "+1 (555) 456-7890",
-                Address = "321 Elm St, Houston, TX 77001",
-                EmploymentStatus = "Unemployed", 
-                MonthlyIncome = 0,
-                HasActiveLoans = false,
-                DateOfBirth = new DateTime(1988, 3, 5),
-                Notes = "Recently unemployed, looking for work",
-                IdType = "State ID",
-                IdNumber = "SI111222333",
-                AnnualSalary = 0,
-                Position = "",
-                AssignedTeller = "Admin User"
-            },
-            new CustomerModel 
-            { 
-                CustomerId = "CUST-2024-005",
-                Name = "David Wilson", 
-                Email = "david.wilson@email.com", 
-                Phone = "+1 (555) 567-8901",
-                Address = "654 Maple Ave, Phoenix, AZ 85001",
-                EmploymentStatus = "Employed", 
-                MonthlyIncome = 6500,
-                HasActiveLoans = true,
-                DateOfBirth = new DateTime(1979, 11, 18),
-                Notes = "High-income customer, multiple loans",
-                IdType = "Passport",
-                IdNumber = "P123456789",
-                AnnualSalary = 78000,
-                Position = "Senior Developer",
-                AssignedTeller = "Manager"
-            },
-            new CustomerModel 
-            { 
-                CustomerId = "CUST-2024-006",
-                Name = "Lisa Garcia", 
-                Email = "lisa.garcia@email.com", 
-                Phone = "+1 (555) 678-9012",
-                Address = "987 Cedar St, Philadelphia, PA 19101",
-                EmploymentStatus = "Self-Employed", 
-                MonthlyIncome = 2800,
-                HasActiveLoans = false,
-                DateOfBirth = new DateTime(1992, 7, 30),
-                Notes = "Freelance designer",
-                IdType = "Driver's License",
-                IdNumber = "DL444555666",
-                AnnualSalary = 33600,
-                Position = "Freelance Designer",
-                AssignedTeller = "Teller 1"
-            },
-            new CustomerModel 
-            { 
-                CustomerId = "CUST-2024-007",
-                Name = "Robert Martinez", 
-                Email = "robert.martinez@email.com", 
-                Phone = "+1 (555) 789-0123",
-                Address = "147 Birch Rd, San Antonio, TX 78201",
-                EmploymentStatus = "Employed", 
-                MonthlyIncome = 4800,
-                HasActiveLoans = true,
-                DateOfBirth = new DateTime(1986, 4, 12),
-                Notes = "Reliable customer, home loan",
-                IdType = "Driver's License",
-                IdNumber = "DL777888999",
-                AnnualSalary = 57600,
-                Position = "Sales Manager",
-                AssignedTeller = "Teller 2"
-            },
-            new CustomerModel 
-            { 
-                CustomerId = "CUST-2024-008",
-                Name = "Amanda Taylor", 
-                Email = "amanda.taylor@email.com", 
-                Phone = "+1 (555) 890-1234",
-                Address = "258 Spruce Ave, San Diego, CA 92101",
-                EmploymentStatus = "Employed", 
-                MonthlyIncome = 5200,
-                HasActiveLoans = false,
-                DateOfBirth = new DateTime(1991, 9, 25),
-                Notes = "New customer, potential for loans",
-                IdType = "State ID",
-                IdNumber = "SI999000111",
-                AnnualSalary = 62400,
-                Position = "Marketing Coordinator",
-                AssignedTeller = "Admin User"
+            // quick connectivity check
+            var canConnect = false;
+            try
+            {
+                canConnect = await Db.Database.CanConnectAsync();
             }
-        };
-        
-        isLoading = false;
+            catch (Exception pingEx)
+            {
+                Console.WriteLine($"Database connectivity check failed: {pingEx.Message}");
+                dbErrorMessage = "DB connect check failed: " + pingEx.Message;
+            }
+
+            if (!canConnect)
+            {
+                Console.WriteLine("DbContext cannot connect to the database. Falling back to empty list.");
+                if (string.IsNullOrEmpty(dbErrorMessage))
+                    dbErrorMessage = "Unable to connect to database. Check connection string and network access.";
+
+                allCustomers = new List<CustomerModel>();
+                return;
+            }
+
+            var customers = await Db.Customers.AsNoTracking().ToListAsync();
+            allCustomers = customers.Select(c => new CustomerModel
+            {
+                Id = c.Id.ToString(),
+                CustomerId = c.CustomerId,
+                Name = c.Name,
+                Email = c.Email,
+                Phone = c.Phone,
+                Address = c.Address,
+                EmploymentStatus = c.EmploymentStatus,
+                MonthlyIncome = c.MonthlyIncome ?? 0m,
+                DateOfBirth = c.DateOfBirth,
+                HasActiveLoans = c.HasActiveLoans ?? false,
+                Notes = c.Notes,
+                CreatedAt = c.CreatedAt ?? DateTime.Now,
+                LastUpdated = c.LastUpdated ?? DateTime.Now,
+                IdType = c.IdType,
+                IdNumber = c.IdNumber,
+                IssuingAuthority = c.IssuingAuthority,
+                ExpirationDate = c.ExpirationDate,
+                AnnualSalary = c.AnnualSalary ?? 0m,
+                Position = c.Position,
+                CertificateUrl = c.CertificateUrl,
+                AssignedTeller = c.AssignedTeller
+            }).ToList();
+        }
+        catch (Exception ex)
+        {
+            // log the exception for debugging
+            Console.WriteLine($"LoadSampleData exception: {ex}");
+            dbErrorMessage = ex.Message + (ex.InnerException != null ? " - " + ex.InnerException.Message : string.Empty);
+            allCustomers = new List<CustomerModel>();
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     // Modal Methods

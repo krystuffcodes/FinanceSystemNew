@@ -1,5 +1,7 @@
 @page "/reports"
 @using System.ComponentModel.DataAnnotations
+@using Microsoft.EntityFrameworkCore
+@inject FinanceSystem1.Data.AppDbContext Db
 
 <PageTitle>Reports & Analytics - Fortress Finance</PageTitle>
 
@@ -177,7 +179,7 @@
 
     <!-- Results Summary -->
     <div class="results-summary">
-        <p><strong>Showing @GetFilteredCorrelations().Count of @GetAllCorrelations().Count correlations</strong></p>
+        <p><strong>Showing @GetFilteredCorrelations().Count of @allCorrelations.Count correlations</strong></p>
     </div>
 
     <!-- Correlations Table -->
@@ -242,7 +244,7 @@
                                     </td>
                                     <td class="correlation-value">
                                         <span class="correlation-badge @GetCorrelationClass(correlation.Value)">
-                                            ? @correlation.Value.ToString("F2")
+                                            @correlation.Value.ToString("F2")
                                         </span>
                                     </td>
                                     <td class="interpretation">
@@ -295,145 +297,43 @@
     private async Task LoadCorrelationData()
     {
         isLoading = true;
-        
-        // Sample correlation data matching your screenshots
-        allCorrelations = new List<CorrelationModel>
+        try
         {
-            new CorrelationModel 
-            { 
-                VariablePair = "Revenue ? Active Loans",
-                Value = 0.92,
-                Interpretation = "Strong Positive - Variables move together",
-                Strength = "Very Strong"
-            },
-            new CorrelationModel 
-            { 
-                VariablePair = "Payment Rate ? Revenue",
-                Value = 0.88,
-                Interpretation = "Strong Positive - Variables move together",
-                Strength = "Very Strong"
-            },
-            new CorrelationModel 
-            { 
-                VariablePair = "Overdue Accounts ? Default Rate",
-                Value = 0.85,
-                Interpretation = "Strong Positive - Variables move together",
-                Strength = "Very Strong"
-            },
-            new CorrelationModel 
-            { 
-                VariablePair = "Payment Percentage ? Customer Health",
-                Value = 0.84,
-                Interpretation = "Strong Positive - Variables move together",
-                Strength = "Very Strong"
-            },
-            new CorrelationModel 
-            { 
-                VariablePair = "Customers ? Revenue",
-                Value = 0.81,
-                Interpretation = "Strong Positive - Variables move together",
-                Strength = "Strong"
-            },
-            new CorrelationModel 
-            { 
-                VariablePair = "Active Loans ? Customers",
-                Value = 0.78,
-                Interpretation = "Strong Positive - Variables move together",
-                Strength = "Strong"
-            },
-            new CorrelationModel 
-            { 
-                VariablePair = "Payment Rate ? Customers",
-                Value = 0.76,
-                Interpretation = "Strong Positive - Variables move together",
-                Strength = "Strong"
-            },
-            new CorrelationModel 
-            { 
-                VariablePair = "Loan Tenure ? Default Rate",
-                Value = 0.65,
-                Interpretation = "Moderate Positive - Variables tend to move together",
-                Strength = "Strong"
-            },
-            new CorrelationModel 
-            { 
-                VariablePair = "Revenue ? Overdue Accounts",
-                Value = -0.45,
-                Interpretation = "Moderate Negative - Variables move in opposite directions",
-                Strength = "Moderate"
-            },
-            new CorrelationModel 
-            { 
-                VariablePair = "Payment Rate ? Default Rate",
-                Value = -0.81,
-                Interpretation = "Strong Negative - Variables move in opposite directions",
-                Strength = "Very Strong"
-            }
-        };
+            // Attempt to load precomputed correlations from DB (if you store them)
+            // For now keep empty but initialize matrix
+            allCorrelations = await Db.Set<FinanceSystem1.Data.RevenueData>().SelectMany(r => new List<CorrelationModel>()).ToListAsync();
 
-        // Build correlation matrix
-        var metrics = new[] { "Revenue", "Active Loans", "Overdue Accounts", "Customers", "Payment Rate", "Default Rate" };
-        correlationMatrix = new Dictionary<string, Dictionary<string, double>>();
-
-        foreach (var metric1 in metrics)
-        {
-            correlationMatrix[metric1] = new Dictionary<string, double>();
-            foreach (var metric2 in metrics)
+            correlationMatrix = new Dictionary<string, Dictionary<string, double>>();
+            var metrics = new[] { "Revenue", "Active Loans", "Overdue Accounts", "Customers", "Payment Rate", "Default Rate" };
+            foreach (var metric1 in metrics)
             {
-                if (metric1 == metric2)
+                correlationMatrix[metric1] = new Dictionary<string, double>();
+                foreach (var metric2 in metrics)
                 {
-                    correlationMatrix[metric1][metric2] = 1.00;
-                }
-                else
-                {
-                    // Find correlation from data or create symmetric
-                    var correlation = FindCorrelation(metric1, metric2);
-                    correlationMatrix[metric1][metric2] = correlation;
+                    correlationMatrix[metric1][metric2] = metric1 == metric2 ? 1.0 : 0.0;
                 }
             }
         }
-        
-        isLoading = false;
-    }
-
-    private double FindCorrelation(string metric1, string metric2)
-    {
-        // Predefined matrix values matching your screenshot
-        var matrixValues = new Dictionary<(string, string), double>
+        catch
         {
-            [("Revenue", "Active Loans")] = 0.92,
-            [("Revenue", "Overdue Accounts")] = -0.45,
-            [("Revenue", "Customers")] = 0.81,
-            [("Revenue", "Payment Rate")] = 0.88,
-            [("Revenue", "Default Rate")] = -0.52,
-            
-            [("Active Loans", "Overdue Accounts")] = -0.38,
-            [("Active Loans", "Customers")] = 0.78,
-            [("Active Loans", "Payment Rate")] = 0.84,
-            [("Active Loans", "Default Rate")] = -0.41,
-            
-            [("Overdue Accounts", "Customers")] = -0.52,
-            [("Overdue Accounts", "Payment Rate")] = -0.71,
-            [("Overdue Accounts", "Default Rate")] = 0.85,
-            
-            [("Customers", "Payment Rate")] = 0.76,
-            [("Customers", "Default Rate")] = -0.48,
-            
-            [("Payment Rate", "Default Rate")] = -0.81
-        };
-
-        // Try direct lookup
-        if (matrixValues.ContainsKey((metric1, metric2)))
-            return matrixValues[(metric1, metric2)];
-        
-        // Try reverse lookup (correlation is symmetric)
-        if (matrixValues.ContainsKey((metric2, metric1)))
-            return matrixValues[(metric2, metric1)];
-        
-        return 0.0; // Default
+            allCorrelations = new List<CorrelationModel>();
+            correlationMatrix = new Dictionary<string, Dictionary<string, double>>();
+            var metrics = new[] { "Revenue", "Active Loans", "Overdue Accounts", "Customers", "Payment Rate", "Default Rate" };
+            foreach (var metric1 in metrics)
+            {
+                correlationMatrix[metric1] = new Dictionary<string, double>();
+                foreach (var metric2 in metrics)
+                {
+                    correlationMatrix[metric1][metric2] = metric1 == metric2 ? 1.0 : 0.0;
+                }
+            }
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
-    // Search and Filter Methods
     private async Task HandleSearch(ChangeEventArgs e)
     {
         searchTerm = e.Value?.ToString() ?? "";
@@ -453,14 +353,11 @@
     {
         var correlations = allCorrelations.AsQueryable();
         
-        // Apply search filter
         if (!string.IsNullOrEmpty(searchTerm))
         {
-            correlations = correlations.Where(c => 
-                c.VariablePair.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+            correlations = correlations.Where(c => c.VariablePair.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
         }
-        
-        // Apply correlation type filter
+
         correlations = selectedCorrelationType switch
         {
             "Strong Positive" => correlations.Where(c => c.Value >= 0.7),
@@ -471,7 +368,6 @@
             _ => correlations
         };
 
-        // Apply sorting
         correlations = sortColumn switch
         {
             "VariablePair" => sortAscending ? correlations.OrderBy(c => c.VariablePair) : correlations.OrderByDescending(c => c.VariablePair),
@@ -484,18 +380,12 @@
         return correlations.ToList();
     }
 
-    private List<CorrelationModel> GetAllCorrelations()
-    {
-        return allCorrelations;
-    }
-
     private List<CorrelationModel> GetPagedCorrelations()
     {
         var filteredCorrelations = GetFilteredCorrelations();
         return filteredCorrelations.Skip(currentPage * pageSize).Take(pageSize).ToList();
     }
 
-    // Matrix Methods
     private string[] GetMetrics()
     {
         return new[] { "Revenue", "Active Loans", "Overdue Accounts", "Customers", "Payment Rate", "Default Rate" };
@@ -521,7 +411,6 @@
         return row;
     }
 
-    // Utility Methods
     private string GetCorrelationClass(double correlation)
     {
         return correlation switch
@@ -539,7 +428,6 @@
         return strength.ToLower().Replace(" ", "-");
     }
 
-    // Sorting Methods
     private void SortBy(string column)
     {
         if (sortColumn == column)
@@ -560,7 +448,6 @@
         return sortAscending ? "?" : "?";
     }
 
-    // View Mode Methods
     private void SetViewMode(string mode)
     {
         viewMode = mode;
@@ -578,7 +465,6 @@
         await Task.CompletedTask;
     }
 
-    // Action Methods
     private void ExportPDF()
     {
         Console.WriteLine("Exporting correlation analysis as PDF...");

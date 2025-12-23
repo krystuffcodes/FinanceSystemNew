@@ -1,5 +1,7 @@
 @page "/payment"
 @using System.ComponentModel.DataAnnotations
+@using Microsoft.EntityFrameworkCore
+@inject FinanceSystem1.Data.AppDbContext Db
 
 <PageTitle>Payment Tracking - Fortress Finance</PageTitle>
 
@@ -243,32 +245,30 @@
     private async Task LoadSampleData()
     {
         isLoading = true;
-        
-        allPayments = new List<PaymentModel>
+        try
         {
-            new PaymentModel 
-            { 
-                CustomerName = "John Doe", 
-                PaymentDate = DateTime.Today.AddDays(-1), 
-                Amount = 15000, 
-                PaymentMethod = "Bank Transfer", 
-                Status = "Completed", 
-                ReferenceId = "PAY-2024-001",
-                Description = "Monthly loan payment"
-            },
-            new PaymentModel 
-            { 
-                CustomerName = "Jane Smith", 
-                PaymentDate = DateTime.Today.AddDays(-2), 
-                Amount = 8500, 
-                PaymentMethod = "Cash", 
-                Status = "Completed", 
-                ReferenceId = "PAY-2024-002",
-                Description = "Partial loan payment"
-            }
-        };
-        
-        isLoading = false;
+            var payments = await Db.Payments.AsNoTracking().ToListAsync();
+            allPayments = payments.Select(p => new PaymentModel
+            {
+                Id = p.Id.ToString(),
+                CustomerName = p.CustomerName,
+                PaymentDate = p.PaymentDate,
+                Amount = p.Amount,
+                PaymentMethod = p.PaymentMethod,
+                Status = p.Status,
+                ReferenceId = p.ReferenceId,
+                Description = p.Description,
+                CreatedAt = p.CreatedAt
+            }).ToList();
+        }
+        catch
+        {
+            allPayments = new List<PaymentModel>();
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     private void SetActiveTab(string tab)
@@ -292,11 +292,9 @@
     private async Task ProcessPayment()
     {
         isProcessing = true;
-        
         try
         {
             newPayment.CreatedAt = DateTime.Now;
-            
             allPayments.Add(new PaymentModel
             {
                 Id = newPayment.Id,
@@ -309,10 +307,32 @@
                 Description = newPayment.Description,
                 CreatedAt = newPayment.CreatedAt
             });
-            
+
+            // persist
+            try
+            {
+                var entity = new FinanceSystem1.Data.Payment
+                {
+                    Id = Guid.Parse(newPayment.Id),
+                    CustomerName = newPayment.CustomerName,
+                    PaymentDate = newPayment.PaymentDate,
+                    Amount = newPayment.Amount,
+                    PaymentMethod = newPayment.PaymentMethod,
+                    Status = newPayment.Status,
+                    ReferenceId = newPayment.ReferenceId,
+                    Description = newPayment.Description,
+                    CreatedAt = newPayment.CreatedAt
+                };
+                Db.Payments.Add(entity);
+                await Db.SaveChangesAsync();
+            }
+            catch
+            {
+                // ignore DB errors
+            }
+
             ClearForm();
             SetActiveTab("view");
-            
             await Task.Delay(100);
         }
         finally
@@ -374,6 +394,19 @@
     private void DeletePayment(PaymentModel payment)
     {
         allPayments.Remove(payment);
+        try
+        {
+            var entity = Db.Payments.FirstOrDefault(e => e.Id.ToString() == payment.Id);
+            if (entity != null)
+            {
+                Db.Payments.Remove(entity);
+                Db.SaveChanges();
+            }
+        }
+        catch
+        {
+            // ignore
+        }
         StateHasChanged();
     }
 }

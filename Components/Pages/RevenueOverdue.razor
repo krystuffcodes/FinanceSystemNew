@@ -1,5 +1,7 @@
 @page "/revenue-overdue"
 @using System.ComponentModel.DataAnnotations
+@using Microsoft.EntityFrameworkCore
+@inject FinanceSystem1.Data.AppDbContext Db
 
 <PageTitle>Customer Revenue Summary - Fortress Finance</PageTitle>
 
@@ -515,6 +517,7 @@
     // Revenue Data Model
     public class RevenueDataModel
     {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string CustomerId { get; set; } = "";
         public string CustomerName { get; set; } = "";
         public decimal LoanAmount { get; set; }
@@ -529,12 +532,13 @@
     // Overdue Account Model
     public class OverdueAccountModel
     {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string CustomerId { get; set; } = "";
         public string CustomerName { get; set; } = "";
         public decimal OutstandingAmount { get; set; }
         public int DaysOverdue { get; set; }
-        public DateTime LastPaymentDate { get; set; }
-        public DateTime NextDueDate { get; set; }
+        public DateTime LastPaymentDate { get; set; } = DateTime.Now;
+        public DateTime NextDueDate { get; set; } = DateTime.Now;
     }
 
     // State Management
@@ -543,7 +547,7 @@
     
     private string activeTab = "revenue";
     private bool isRevenueLoading = false;
-    
+
     // Revenue Tab State
     private string revenueSearchTerm = "";
     private string revenueSelectedFilter = "All";
@@ -565,105 +569,44 @@
     private async Task LoadSampleData()
     {
         isRevenueLoading = true;
-        
-        // Sample revenue data
-        allRevenueData = new List<RevenueDataModel>
+        try
         {
-            new RevenueDataModel 
-            { 
-                CustomerId = "CUST-2024-001",
-                CustomerName = "John Smith", 
-                LoanAmount = 50000,
-                InterestRate = 8.5m,
-                PaidAmount = 15000,
-                InterestEarned = 2125,
-                Status = "Active",
-                LoanDate = new DateTime(2024, 1, 15),
-                LastPaymentDate = new DateTime(2024, 12, 15)
-            },
-            new RevenueDataModel 
-            { 
-                CustomerId = "CUST-2024-002",
-                CustomerName = "Jane Johnson", 
-                LoanAmount = 30000,
-                InterestRate = 7.2m,
-                PaidAmount = 30000,
-                InterestEarned = 4320,
-                Status = "Completed",
-                LoanDate = new DateTime(2024, 3, 10),
-                LastPaymentDate = new DateTime(2024, 11, 30)
-            },
-            new RevenueDataModel 
-            { 
-                CustomerId = "CUST-2024-003",
-                CustomerName = "Michael Brown", 
-                LoanAmount = 75000,
-                InterestRate = 9.1m,
-                PaidAmount = 25000,
-                InterestEarned = 3412.5m,
-                Status = "Active",
-                LoanDate = new DateTime(2024, 2, 20),
-                LastPaymentDate = new DateTime(2024, 12, 10)
-            },
-            new RevenueDataModel 
-            { 
-                CustomerId = "CUST-2024-004",
-                CustomerName = "Sarah Davis", 
-                LoanAmount = 40000,
-                InterestRate = 6.8m,
-                PaidAmount = 8000,
-                InterestEarned = 1088,
-                Status = "Active",
-                LoanDate = new DateTime(2024, 4, 5),
-                LastPaymentDate = new DateTime(2024, 10, 15)
-            },
-            new RevenueDataModel 
-            { 
-                CustomerId = "CUST-2024-005",
-                CustomerName = "David Wilson", 
-                LoanAmount = 85000,
-                InterestRate = 8.9m,
-                PaidAmount = 85000,
-                InterestEarned = 15130,
-                Status = "Completed",
-                LoanDate = new DateTime(2023, 8, 12),
-                LastPaymentDate = new DateTime(2024, 12, 1)
-            }
-        };
+            var revenues = await Db.RevenueDatas.AsNoTracking().ToListAsync();
+            allRevenueData = revenues.Select(r => new RevenueDataModel
+            {
+                Id = r.Id.ToString(),
+                CustomerId = r.CustomerId,
+                CustomerName = r.CustomerName,
+                LoanAmount = r.LoanAmount,
+                InterestRate = r.InterestRate,
+                PaidAmount = r.PaidAmount,
+                InterestEarned = r.InterestEarned,
+                Status = r.Status,
+                LoanDate = r.LoanDate,
+                LastPaymentDate = r.LastPaymentDate
+            }).ToList();
 
-        // Sample overdue accounts
-        allOverdueAccounts = new List<OverdueAccountModel>
+            var overdues = await Db.OverdueAccounts.AsNoTracking().ToListAsync();
+            allOverdueAccounts = overdues.Select(o => new OverdueAccountModel
+            {
+                Id = o.Id.ToString(),
+                CustomerId = o.CustomerId,
+                CustomerName = o.CustomerName,
+                OutstandingAmount = o.OutstandingAmount,
+                DaysOverdue = o.DaysOverdue,
+                LastPaymentDate = o.LastPaymentDate,
+                NextDueDate = o.NextDueDate
+            }).ToList();
+        }
+        catch
         {
-            new OverdueAccountModel
-            {
-                CustomerId = "CUST-2024-006",
-                CustomerName = "Lisa Garcia",
-                OutstandingAmount = 5200,
-                DaysOverdue = 15,
-                LastPaymentDate = new DateTime(2024, 11, 15),
-                NextDueDate = new DateTime(2024, 12, 15)
-            },
-            new OverdueAccountModel
-            {
-                CustomerId = "CUST-2024-007",
-                CustomerName = "Robert Martinez",
-                OutstandingAmount = 8500,
-                DaysOverdue = 45,
-                LastPaymentDate = new DateTime(2024, 10, 20),
-                NextDueDate = new DateTime(2024, 11, 20)
-            },
-            new OverdueAccountModel
-            {
-                CustomerId = "CUST-2024-008",
-                CustomerName = "Amanda Taylor",
-                OutstandingAmount = 3200,
-                DaysOverdue = 75,
-                LastPaymentDate = new DateTime(2024, 9, 30),
-                NextDueDate = new DateTime(2024, 10, 30)
-            }
-        };
-        
-        isRevenueLoading = false;
+            allRevenueData = new List<RevenueDataModel>();
+            allOverdueAccounts = new List<OverdueAccountModel>();
+        }
+        finally
+        {
+            isRevenueLoading = false;
+        }
     }
 
     // Tab Management
